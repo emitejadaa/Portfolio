@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-types */
 "use client";
 
 import { ThemeProvider as NextThemesProvider } from "next-themes";

@@ -1,11 +1,32 @@
 import Link from "next/link";
 import {
   ArrowUpRight,
+  Boxes,
+  Braces,
+  Brackets,
+  Cherry,
+  CircuitBoard,
+  Code2,
+  Database,
+  DatabaseZap,
   ExternalLink,
+  Figma,
+  FlaskConical,
+  GitBranch,
   Github,
+  Grid3x3,
+  Infinity,
+  LayoutPanelLeft,
+  LineChart,
   Linkedin,
   Mail,
   PhoneCall,
+  Sparkles,
+  SquareCode,
+  TerminalSquare,
+  Zap,
+  Binary,
+  type LucideIcon,
 } from "lucide-react";
 import { ContactForm } from "@/components/contact-form";
 import { SectionHeading } from "@/components/section-heading";
@@ -21,8 +42,30 @@ import {
   socialLinks,
 } from "@/data/portfolio";
 
-const listItemClass =
-  "rounded-full border border-zinc-200/80 bg-white px-4 py-1 text-sm text-zinc-700 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-100";
+const skillBadgeClass =
+  "inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white px-4 py-1 text-sm font-medium text-zinc-700 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-100";
+
+const techIconMap: Record<string, LucideIcon> = {
+  Arduino: CircuitBoard,
+  Electrónica: Zap,
+  C: Braces,
+  "C++": Brackets,
+  "Raspberry Pi": Cherry,
+  Python: Binary,
+  TensorFlow: Boxes,
+  NumPy: Grid3x3,
+  Matplotlib: LineChart,
+  "Google Colab": Infinity,
+  Flask: FlaskConical,
+  JavaScript: Code2,
+  SQL: Database,
+  Postgres: DatabaseZap,
+  "HTML / CSS": LayoutPanelLeft,
+  "Git & GitHub": GitBranch,
+  Linux: TerminalSquare,
+  "VS Code": SquareCode,
+  Figma: Figma,
+};
 
 export default function Home() {
   return (
@@ -56,13 +99,13 @@ export default function Home() {
           ))}
         </div>
         <div className="mt-8 flex flex-wrap gap-4">
-          <a
-            href={`mailto:${socialLinks.email}`}
+          <Link
+            href="#contact"
             className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-400/40 transition hover:bg-emerald-600"
           >
             Hablemos
             <ArrowUpRight size={16} />
-          </a>
+          </Link>
           <a
             href={socialLinks.github}
             target="_blank"
@@ -245,11 +288,18 @@ export default function Home() {
                 {group.title}
               </h3>
               <div className="mt-3 flex flex-wrap gap-2">
-                {group.items.map((item) => (
-                  <span key={item} className={listItemClass}>
-                    {item}
-                  </span>
-                ))}
+                {group.items.map((item) => {
+                  const Icon = techIconMap[item] ?? Sparkles;
+                  return (
+                    <span key={item} className={skillBadgeClass}>
+                      <Icon
+                        className="h-4 w-4 text-emerald-500"
+                        aria-hidden="true"
+                      />
+                      {item}
+                    </span>
+                  );
+                })}
               </div>
             </article>
           ))}
