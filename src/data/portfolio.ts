@@ -20,7 +20,8 @@ export const projects = [
     title: "NeuroLinked",
     description:
       "Investigación y desarrollo de un modelo de IA capaz de interpretar señales EEG reales para accionar dispositivos domóticos.",
-    impact: "Prototipo finalista dentro del colegio, integra hardware biométrico y experiencia completa de usuario.",
+    impact:
+      "Prototipo finalista dentro del colegio y seleccionado para MVP Experience 2025, integra hardware biométrico y experiencia completa de usuario.",
     tags: ["IA aplicada", "Domótica", "EEG", "Accesibilidad"],
     links: {
       github: "https://github.com/emitejadaa/NeuroLinked",
@@ -31,7 +32,7 @@ export const projects = [
     description:
       "Carro inteligente que combina hardware propio, backend y panel web para administrar computadoras compartidas en instituciones.",
     impact:
-      "Redujo pérdidas de notebooks y simplificó el control de inventario en colegios gracias al monitoreo y los cierres seguros.",
+      "Redujo pérdidas de notebooks, simplificó el control de inventario en colegios y fue presentado en TIC Experience 2025 gracias al monitoreo y los cierres seguros.",
     tags: ["Backend", "IoT", "Flask", "Raspberry Pi"],
     links: {
       site: "https://secure-track.vercel.app/",
@@ -49,6 +50,7 @@ export const experience = [
       "Me encargué del diseño electrónico del carrito y del firmware que conecta Arduino y Raspberry Pi con el backend Flask.",
       "Realicé el cableado y armado físico asegurando lecturas confiables para el monitoreo y el cierre seguro.",
       "Coordiné al equipo en pruebas con docentes para ajustar la experiencia de uso y documentar mejoras futuras.",
+      "Representamos el proyecto en TIC Experience 2025 para compartir el enfoque con la comunidad educativa.",
     ],
     link: "https://secure-track.vercel.app/",
   },
@@ -60,6 +62,7 @@ export const experience = [
       "Investigé bibliografía y datos abiertos para comprender los patrones EEG relevantes para domótica.",
       "Entrené y evalué modelos en Colab, y programé en Python la interfaz que comunica el EEG con la IA en tiempo real.",
       "Probé el prototipo con usuarios finales y redacté aprendizajes para su futura evolución.",
+      "Presenté el prototipo en MVP Experience 2025 para recibir feedback de especialistas en innovación.",
     ],
     link: "https://github.com/emitejadaa/NeuroLinked",
   },
