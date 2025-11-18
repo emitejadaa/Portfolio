@@ -2,9 +2,9 @@ export const heroContent = {
   name: "Emiliano Tejada",
   roles: ["Hardware", "Backend", "IA"],
   headline:
-    "Creo soluciones conectadas que unen electrónica, software y modelos de IA para impactar de forma tangible.",
+    "Exploro cómo el hardware, el software y la IA pueden convivir para resolver problemas reales y bien aterrizados.",
   about:
-    "Combino prototipado de hardware, desarrollo backend y modelos de inteligencia artificial para productos preparados para producción. Busco colaborar en equipos que valoren la innovación aplicada.",
+    "Hoy enfoco mis proyectos escolares en hardware embebido con microcontroladores como ESP32, Arduino y Raspberry Pi, y los conecto con servicios backend y modelos de IA cuando la solución lo requiere. Me entusiasma aprender tecnologías nuevas si aportan a la experiencia y accesibilidad de quien usa el producto.",
   availability: "Listo para nuevos desafíos en proyectos hardware + software",
 };
 
@@ -19,7 +19,7 @@ export const projects = [
   {
     title: "NeuroLinked",
     description:
-      "Modelo de IA que interpreta señales EEG reales para accionar domótica y devolver autonomía a personas con movilidad reducida.",
+      "Investigación y desarrollo de un modelo de IA capaz de interpretar señales EEG reales para accionar dispositivos domóticos.",
     impact: "Prototipo finalista dentro del colegio, integra hardware biométrico y experiencia completa de usuario.",
     tags: ["IA aplicada", "Domótica", "EEG", "Accesibilidad"],
     links: {
@@ -29,9 +29,9 @@ export const projects = [
   {
     title: "Secure Track",
     description:
-      "Plataforma backend + hardware para administrar carritos de computadoras compartidas con monitoreo, cierres seguros y panel web.",
+      "Carro inteligente que combina hardware propio, backend y panel web para administrar computadoras compartidas en instituciones.",
     impact:
-      "Reduce pérdidas de equipos y facilita la logística tecnológica en instituciones educativas y empresas.",
+      "Redujo pérdidas de notebooks y simplificó el control de inventario en colegios gracias al monitoreo y los cierres seguros.",
     tags: ["Backend", "IoT", "Flask", "Raspberry Pi"],
     links: {
       site: "https://secure-track.vercel.app/",
@@ -46,9 +46,9 @@ export const experience = [
     organisation: "ORT Belgrano - Proyecto institucional",
     period: "2024",
     details: [
-      "Diseñé la arquitectura del carrito inteligente, integrando controladores físicos, backend Flask y dashboard responsive.",
-      "Implementé autenticación y registro de uso para asegurar trazabilidad de los equipos.",
-      "Coordiné a mi equipo en pruebas de hardware y mejoras de UX basadas en feedback real de docentes.",
+      "Me encargué del diseño electrónico del carrito y del firmware que conecta Arduino y Raspberry Pi con el backend Flask.",
+      "Realicé el cableado y armado físico asegurando lecturas confiables para el monitoreo y el cierre seguro.",
+      "Coordiné al equipo en pruebas con docentes para ajustar la experiencia de uso y documentar mejoras futuras.",
     ],
     link: "https://secure-track.vercel.app/",
   },
@@ -57,9 +57,9 @@ export const experience = [
     organisation: "ORT Belgrano - Proyecto final",
     period: "2023",
     details: [
-      "Entrené modelos de deep learning en Colab para clasificar patrones EEG.",
-      "Diseñé la electrónica y el pipeline de inferencia en tiempo real para accionar dispositivos del hogar.",
-      "Validé el prototipo con usuarios y documenté un roadmap para escalarlo.",
+      "Investigé bibliografía y datos abiertos para comprender los patrones EEG relevantes para domótica.",
+      "Entrené y evalué modelos en Colab, y programé en Python la interfaz que comunica el EEG con la IA en tiempo real.",
+      "Probé el prototipo con usuarios finales y redacté aprendizajes para su futura evolución.",
     ],
     link: "https://github.com/emitejadaa/NeuroLinked",
   },
@@ -112,6 +112,6 @@ export const achievements = [
 
 export const contactContent = {
   copy:
-    "¿Necesitás llevar una idea desde el prototipo hasta un piloto funcional? Estoy disponible para colaborar en equipos que integren hardware, backend e inteligencia artificial.",
+    "Busco colaborar en proyectos donde pueda aportar mi experiencia en hardware, backend e investigación aplicada, ya sea en entornos escolares, de investigación o en equipos que necesiten alguien que aprenda rápido.",
   responseTime: "Respondo en menos de 48 horas",
 };
