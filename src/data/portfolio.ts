@@ -100,7 +100,7 @@ export const education = [
     period: "2010 - 2020",
   },
   {
-    institution: "Cambridge First Certificate (B1)",
+    institution: "Cambridge First Certificate (B2)",
     detail: "Certificación internacional de inglés emitida por Cambridge University.",
     period: "2023",
   },
