@@ -343,6 +343,17 @@ export default function Home() {
                 <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-200">
                   {achievement.description}
                 </p>
+                {achievement.site && (
+                  <a
+                    href={achievement.site}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 transition hover:text-emerald-700 dark:text-emerald-300 dark:hover:text-emerald-200"
+                  >
+                    Visitar
+                    <ArrowUpRight size={14} />
+                  </a>
+                )}
               </article>
             ))}
           </div>
