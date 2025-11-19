@@ -2,7 +2,7 @@ export const heroContent = {
   name: "Emiliano Tejada",
   roles: ["Hardware", "Backend", "IA"],
   headline:
-    "Creo soluciones conectadas que unen electrónica, software y modelos de IA para impactar de forma tangible.",
+    "Creo soluciones conectadas que unen electrónica, software y IA para impactar de forma tangible.",
   about:
     "Combino prototipado de hardware, desarrollo backend y modelos de inteligencia artificial para productos preparados para producción. Busco colaborar en equipos que valoren la innovación aplicada.",
   availability: "Listo para nuevos desafíos en proyectos hardware + software",
@@ -20,9 +20,10 @@ export const projects = [
     title: "NeuroLinked",
     description:
       "Modelo de IA que interpreta señales EEG reales para accionar domótica y devolver autonomía a personas con movilidad reducida.",
-    impact: "Prototipo finalista dentro del colegio, integra hardware biométrico y experiencia completa de usuario.",
+    impact: "Le da la posibilidad a cualquiera de controlar domotica de una manera inovadora y accesible",
     tags: ["IA aplicada", "Domótica", "EEG", "Accesibilidad"],
     links: {
+      site: "https://neurolinked.vercel.app",
       github: "https://github.com/emitejadaa/NeuroLinked",
     },
   },
@@ -47,21 +48,23 @@ export const experience = [
     period: "2024",
     details: [
       "Diseñé la arquitectura del carrito inteligente, integrando controladores físicos, backend Flask y dashboard responsive.",
-      "Implementé autenticación y registro de uso para asegurar trazabilidad de los equipos.",
-      "Coordiné a mi equipo en pruebas de hardware y mejoras de UX basadas en feedback real de docentes.",
+      "Implementé un sistema de retiro por QR que optimiza la gestión de préstamos y devoluciones.",
+      "Trabaje con un equipo que aseguro que el proyecto sea moderno, escalable y fácil de usar.",
     ],
     link: "https://secure-track.vercel.app/",
+    repo: "https://github.com/3-TIC-ORT/proyecto-3-secure-track/tree/Mrhardware--emi"
   },
   {
     role: "Investigador y desarrollador - NeuroLinked",
     organisation: "ORT Belgrano - Proyecto final",
     period: "2023",
     details: [
-      "Entrené modelos de deep learning en Colab para clasificar patrones EEG.",
-      "Diseñé la electrónica y el pipeline de inferencia en tiempo real para accionar dispositivos del hogar.",
+      "Entrené modelos de deep learning para clasificar patrones EEG.",
+      "Creamos una web en la que cualquiera pueda probar la precision de nuestro modelo con sus propias mediciones eeg.",
       "Validé el prototipo con usuarios y documenté un roadmap para escalarlo.",
     ],
-    link: "https://github.com/emitejadaa/NeuroLinked",
+    link: "https://neurolinked.vercel.app",
+    repo: "https://github.com/emitejadaa/NeuroLinked"
   },
 ];
 
@@ -89,24 +92,30 @@ export const education = [
     institution: "Secundario ORT Belgrano",
     detail:
       "Tecnologías de la Información y la Comunicación - Enfoque en hardware, software y gestión de proyectos.",
-    period: "2020 - 2025",
+    period: "2021 - 2026",
   },
   {
     institution: "Colegio San Carlos Diálogos",
-    detail: "Educación primaria con foco en pensamiento científico y valores comunitarios.",
-    period: "2009 - 2019",
+    detail: "Educación preescolar y primaria bilingue.",
+    period: "2010 - 2020",
   },
   {
     institution: "Cambridge First Certificate (B1)",
     detail: "Certificación internacional de inglés emitida por Cambridge University.",
-    period: "2022",
+    period: "2023",
   },
 ];
 
 export const achievements = [
   {
-    title: "Participante destacado - Fundación Bullrich",
-    description: "Seleccionado para presentar soluciones tecnológicas que mejoran la seguridad ciudadana.",
+    title: "Participante en la Tic Experience 2025.",
+    description: "Presentando Securetrack",
+    site:"https://www.ort.edu.ar/ticexperience/2025/",
+  },
+  {
+    title: "Participante en la MVP Experience 2025.",
+    description: "Presentando Neurolinked",
+    site:"https://mvpexperience25.vercel.app/"
   },
 ];
 
