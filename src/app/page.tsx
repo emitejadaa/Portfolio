@@ -30,7 +30,6 @@ import {
 } from "lucide-react";
 import { ContactForm } from "@/components/contact-form";
 import { SectionHeading } from "@/components/section-heading";
-import { ThemeToggle } from "@/components/theme-toggle";
 import {
   achievements,
   contactContent,
@@ -80,7 +79,6 @@ export default function Home() {
               {heroContent.name}
             </h1>
           </div>
-          <ThemeToggle />
         </div>
         <p className="mt-6 text-lg text-zinc-600 dark:text-zinc-300">
           {heroContent.headline}

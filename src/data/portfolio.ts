@@ -44,7 +44,7 @@ export const projects = [
 export const experience = [
   {
     role: "Líder técnico - Secure Track",
-    organisation: "ORT Belgrano - Proyecto institucional",
+    organisation: "ORT Belgrano - Proyecto 2024",
     period: "2024",
     details: [
       "Diseñé la arquitectura del carrito inteligente, integrando controladores físicos, backend Flask y dashboard responsive.",
@@ -56,7 +56,7 @@ export const experience = [
   },
   {
     role: "Investigador y desarrollador - NeuroLinked",
-    organisation: "ORT Belgrano - Proyecto final",
+    organisation: "ORT Belgrano - Proyecto 2025",
     period: "2023",
     details: [
       "Entrené modelos de deep learning para clasificar patrones EEG.",
