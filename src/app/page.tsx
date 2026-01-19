@@ -411,19 +411,6 @@ export default function Home() {
                 LinkedIn
               </a>
             </li>
-            <li className="flex items-center gap-3">
-              <span className="rounded-full bg-slate-100 p-2 text-slate-600 dark:bg-slate-500/10 dark:text-slate-200">
-                <PhoneCall size={18} />
-              </span>
-              <a
-                href={socialLinks.whatsapp}
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-white"
-              >
-                WhatsApp +54 11 6893 1873
-              </a>
-            </li>
           </ul>
         </div>
         <div className="rounded-3xl border border-zinc-100 bg-white/80 p-6 shadow-lg dark:border-zinc-800 dark:bg-zinc-950/60">
