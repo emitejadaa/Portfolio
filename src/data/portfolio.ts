@@ -12,7 +12,6 @@ export const socialLinks = {
   email: "emitejadaaragon@gmail.com",
   github: "https://github.com/emitejadaa",
   linkedin: "https://www.linkedin.com/in/emiliano-tejada-7a2791396/",
-  whatsapp: "https://wa.me/541168931873",
 };
 
 export const projects = [
