@@ -38,6 +38,42 @@ export const projects = [
       github: "https://github.com/3-TIC-ORT/proyecto-3-secure-track",
     },
   },
+  {
+    title: "FreeWheel",
+    description:
+      "Backend NestJS para un marketplace P2P de alquiler de autos: autenticación, perfiles, publicación de vehículos, disponibilidad, reservas, pagos mock reemplazables y panel de administración.",
+    impact:
+      "Infraestructura backend lista para producción, desplegable como función serverless.",
+    tags: ["Backend", "NestJS", "Prisma", "PostgreSQL"],
+    links: {
+      site: "https://free-wheel.vercel.app",
+      github: "https://github.com/emitejadaa/FreeWheel",
+    },
+  },
+  {
+    title: "CSBS-DP Form",
+    description:
+      "Aplicación clínica en Next.js que digitaliza el cuestionario CSBS-DP, calcula los puntajes automáticamente y envía un reporte estructurado por email al profesional de la salud.",
+    impact:
+      "Automatiza la evaluación clínica y elimina el cálculo manual de puntajes.",
+    tags: ["Next.js", "Frontend", "Serverless", "Salud"],
+    links: {
+      site: "https://csbs-form.vercel.app",
+      github: "https://github.com/emitejadaa/csbs-form",
+    },
+  },
+  {
+    title: "WhatTheWeather",
+    description:
+      "Dashboard de clima desarrollado con Astro que muestra el estado actual y un pronóstico corto de cualquier ciudad mediante búsqueda.",
+    impact:
+      "Consulta rápida del clima con una interfaz limpia y totalmente responsive.",
+    tags: ["Astro", "Frontend", "API REST"],
+    links: {
+      site: "https://what-the-weather.vercel.app",
+      github: "https://github.com/emitejadaa/whatTheWeather",
+    },
+  },
 ];
 
 export const experience = [
@@ -56,7 +92,7 @@ export const experience = [
   {
     role: "Investigador y desarrollador - NeuroLinked",
     organisation: "ORT Belgrano - Proyecto 2025",
-    period: "2023",
+    period: "2025",
     details: [
       "Entrené modelos de deep learning para clasificar patrones EEG.",
       "Creamos una web en la que cualquiera pueda probar la precision de nuestro modelo con sus propias mediciones eeg.",
@@ -122,4 +158,16 @@ export const contactContent = {
   copy:
     "¿Necesitás llevar una idea desde el prototipo hasta un piloto funcional? Estoy disponible para colaborar en equipos que integren hardware, backend e inteligencia artificial.",
   responseTime: "Respondo en menos de 48 horas",
+};
+
+// Handle de GitHub y valores de respaldo para la franja de estadísticas.
+// Si el fetch a la API de GitHub falla (rate-limit, sin red), se usan estos.
+export const githubStats = {
+  username: "emitejadaa",
+  url: "https://github.com/emitejadaa",
+  fallback: {
+    publicRepos: 31,
+    followers: 4,
+  },
+  languages: ["TypeScript", "Python", "C++", "JavaScript", "C#"],
 };
