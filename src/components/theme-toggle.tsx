@@ -4,30 +4,19 @@ import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export function ThemeToggle() {
-  const { resolvedTheme, systemTheme, setTheme } = useTheme();
-  const activeTheme = resolvedTheme ?? systemTheme;
-
-  if (!activeTheme) {
-    return (
-      <button
-        aria-label="Toggle theme"
-        className="rounded-full border border-white/10 bg-white/10 p-2 text-sm text-white/80 backdrop-blur"
-      >
-        —
-      </button>
-    );
-  }
-
-  const isDark = activeTheme === "dark";
+  const { resolvedTheme, setTheme } = useTheme();
 
   return (
     <button
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="inline-flex items-center gap-2 rounded-full border border-zinc-200/60 bg-white/80 px-4 py-2 text-sm font-medium text-zinc-900 shadow-sm transition hover:border-zinc-300 hover:bg-white dark:border-zinc-700/80 dark:bg-zinc-900/70 dark:text-zinc-100 dark:hover:border-zinc-600"
+      type="button"
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
       aria-label="Cambiar tema"
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white/70 text-zinc-700 shadow-sm backdrop-blur transition hover:border-emerald-400/60 hover:text-emerald-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:text-emerald-300"
     >
-      {isDark ? <Sun size={16} /> : <Moon size={16} />}
-      <span>{isDark ? "Claro" : "Oscuro"}</span>
+      {/* next-themes aplica la clase .dark antes del paint, así que la
+          visibilidad por CSS evita el parpadeo y el mismatch de hidratación. */}
+      <Moon size={16} className="dark:hidden" />
+      <Sun size={16} className="hidden dark:block" />
     </button>
   );
 }
