@@ -2,27 +2,64 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ============================================================
+   Design tokens  (blue-tech system from the /Design mockup)
+   Default theme is DARK. Light values live on :root, dark on .dark
+   ============================================================ */
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --accent: #10b981;
+  --bg: #eef3fb;
+  --bg2: #ffffff;
+  --surface: rgba(20, 60, 130, 0.04);
+  --surface2: rgba(20, 60, 130, 0.07);
+  --border: rgba(30, 70, 140, 0.16);
+  --grid: rgba(30, 70, 140, 0.06);
+  --nav: rgba(245, 248, 253, 0.72);
+  --text: #0d1626;
+  --muted: #4f5b70; /* darkened from design for WCAG AA on light bg */
+  --accent: #1657e0; /* darkened from #1f6bff for AA on small text */
+  --accent2: #0a86b8;
+  --glow: rgba(31, 107, 255, 0.14);
+  --danger: #c62f2f;
+  --on-accent: #f6fbff;
 }
 
 .dark {
-  --background: #05070a;
-  --foreground: #e7f6ef;
-  --accent: #34d399;
+  --bg: #060912;
+  --bg2: #0a1120;
+  --surface: rgba(255, 255, 255, 0.035);
+  --surface2: rgba(255, 255, 255, 0.06);
+  --border: rgba(125, 160, 215, 0.16);
+  --grid: rgba(120, 160, 220, 0.05);
+  --nav: rgba(8, 12, 22, 0.55);
+  --text: #e9eef7;
+  --muted: #95a1b6; /* slightly brightened from design for AA */
+  --accent: #4d9fff;
+  --accent2: #62d4ff;
+  --glow: rgba(77, 159, 255, 0.22);
+  --danger: #ff8a8a;
+  --on-accent: #04111f;
   color-scheme: dark;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --font-sans: var(--font-space-grotesk);
+  --font-mono: var(--font-jetbrains-mono);
+  --color-bg: var(--bg);
+  --color-bg2: var(--bg2);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface2);
+  --color-border-token: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
   --color-accent: var(--accent);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-accent2: var(--accent2);
+}
 
-  --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+/* ============================================================
+   Base
+   ============================================================ */
+* {
+  box-sizing: border-box;
 }
 
 html {
@@ -30,61 +67,341 @@ html {
 }
 
 body {
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
-  /* Fondo luminoso para el tema claro */
+  margin: 0;
+  min-height: 100dvh;
+  color: var(--text);
+  font-family: var(--font-space-grotesk), system-ui, -apple-system, sans-serif;
   background:
-    radial-gradient(1200px 600px at 50% -10%, rgba(16, 185, 129, 0.12), transparent 60%),
-    linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
-  background-attachment: fixed;
-}
-
-.dark body {
-  /* Fondo profundo negro -> esmeralda para el tema oscuro (identidad del sitio) */
-  background:
-    radial-gradient(900px 500px at 50% -10%, rgba(16, 185, 129, 0.18), transparent 55%),
-    linear-gradient(180deg, #000000 0%, #04140d 55%, #052016 100%);
-  background-attachment: fixed;
-}
-
-/* Las secciones se anclan debajo del nav sticky */
-section[id] {
-  scroll-margin-top: 6rem;
+    radial-gradient(1100px 620px at 50% -12%, var(--glow), transparent 62%),
+    var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background 0.5s ease, color 0.5s ease;
 }
 
 ::selection {
-  background: rgba(16, 185, 129, 0.3);
+  background: color-mix(in srgb, var(--accent) 34%, transparent);
+  color: var(--text);
 }
 
-/* Animación de entrada usada por el componente <Reveal> */
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+section[id] {
+  scroll-margin-top: 88px;
 }
 
+.font-mono {
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+/* Hide native cursor only while the custom cursor is mounted & active */
+html.et-cursor-none,
+html.et-cursor-none * {
+  cursor: none !important;
+}
+
+/* ============================================================
+   Reusable component primitives (mirror the design's inline styles)
+   ============================================================ */
+
+/* eyebrow: mono accent label */
+.et-eyebrow {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+}
+
+/* availability / status pill */
+.et-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.et-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c674;
+  box-shadow: 0 0 10px #22c674;
+  animation: pblink 2s ease-in-out infinite;
+}
+
+/* buttons */
+.et-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s,
+    background-position 0.5s ease, filter 0.3s, border-color 0.25s, background 0.25s, color 0.25s;
+}
+.et-btn:active {
+  transform: scale(0.96);
+}
+
+.et-btn-primary {
+  color: var(--on-accent);
+  border: none;
+  background: linear-gradient(120deg, var(--accent), var(--accent2), var(--accent));
+  background-size: 200% 100%;
+  box-shadow: 0 10px 30px var(--glow);
+}
+.et-btn-primary:hover {
+  transform: translateY(-3px);
+  background-position: 100% 50%;
+  box-shadow: 0 18px 44px var(--glow), 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+  filter: brightness(1.06);
+}
+
+.et-btn-ghost {
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.et-btn-ghost:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: 0 14px 36px var(--glow);
+}
+
+/* cards */
+.et-card {
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.35s, box-shadow 0.35s;
+}
+.et-card-hover:hover {
+  transform: translateY(-6px) scale(1.012);
+  border-color: var(--accent);
+  box-shadow: 0 22px 55px var(--glow), 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+/* chips */
+.et-chip {
+  display: inline-block;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 13px;
+  padding: 6px 11px;
+  border-radius: 9px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s, color 0.2s, background 0.2s;
+}
+.et-chip:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* nav links */
+.et-navlink {
+  cursor: pointer;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 14px;
+  color: var(--muted);
+  background: none;
+  border: none;
+  text-decoration: none;
+  transition: color 0.25s, transform 0.25s;
+}
+.et-navlink:hover {
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* form fields */
+.et-field {
+  width: 100%;
+  padding: 13px 15px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+}
+.et-field::placeholder {
+  color: color-mix(in srgb, var(--muted) 85%, transparent);
+}
+.et-field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--glow);
+  background: var(--surface2);
+}
+
+/* contact / social rows */
+.et-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: var(--text);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s, background 0.25s, box-shadow 0.25s;
+}
+.et-row:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  box-shadow: 0 14px 36px var(--glow);
+}
+
+/* small bordered icon glyph squares */
+.et-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+
+/* project card: animated top bar + thumbnail zoom on hover/focus */
+.et-project {
+  position: relative;
+  overflow: hidden;
+}
+.et-prj-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 2;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.et-project:hover .et-prj-bar,
+.et-project:focus-visible .et-prj-bar {
+  transform: scaleX(1);
+}
+.et-prj-thumb img {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.et-project:hover .et-prj-thumb img {
+  transform: scale(1.05);
+}
+
+/* small mono tag (project cards / detail) */
+.et-tag {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  padding: 4px 9px;
+  border-radius: 7px;
+  background: var(--surface2);
+  color: var(--muted);
+}
+
+/* ============================================================
+   Accessibility: visible keyboard focus (design relies on hover)
+   ============================================================ */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* ============================================================
+   Scroll-reveal (used by <Reveal>)
+   ============================================================ */
 .reveal {
   opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
-
 .reveal.is-visible {
-  animation: var(--animate-fade-up);
+  opacity: 1;
+  transform: none;
 }
 
+/* ============================================================
+   Keyframes
+   ============================================================ */
+@keyframes pblink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.7); }
+}
+@keyframes pfloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes pspin {
+  to { transform: rotate(360deg); }
+}
+@keyframes detailin {
+  from { opacity: 0; transform: translateY(28px) scale(0.99); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes gradshift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.et-detail-in {
+  animation: detailin 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.et-role-gradient {
+  background: linear-gradient(120deg, var(--accent), var(--accent2), var(--accent));
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradshift 6s ease-in-out infinite;
+}
+
+/* ============================================================
+   Reduced motion: collapse everything to static
+   ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-  .reveal,
-  .reveal.is-visible {
-    opacity: 1;
-    animation: none;
-    transform: none;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  /* never hide the native cursor when motion is reduced */
+  html.et-cursor-none,
+  html.et-cursor-none * {
+    cursor: auto !important;
   }
 }

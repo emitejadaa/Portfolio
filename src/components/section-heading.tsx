@@ -1,20 +1,36 @@
 type SectionHeadingProps = {
+  index: string;
   label: string;
-  eyebrow?: string;
+  title?: string;
 };
 
-export function SectionHeading({ label, eyebrow }: SectionHeadingProps) {
+/** "01 / STACK" mono eyebrow + optional headline, baseline-aligned. */
+export function SectionHeading({ index, label, title }: SectionHeadingProps) {
   return (
-    <div className="mb-8">
-      {eyebrow && (
-        <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-500 dark:text-emerald-400">
-          <span className="h-px w-6 bg-emerald-500/60" aria-hidden="true" />
-          {eyebrow}
-        </p>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "baseline",
+        gap: 16,
+        marginBottom: title ? 36 : 30,
+        flexWrap: "wrap",
+      }}
+    >
+      <span className="et-eyebrow">
+        {index} / {label}
+      </span>
+      {title && (
+        <h2
+          style={{
+            margin: 0,
+            fontSize: "clamp(28px, 4vw, 42px)",
+            fontWeight: 600,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          {title}
+        </h2>
       )}
-      <h2 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">
-        {label}
-      </h2>
     </div>
   );
 }

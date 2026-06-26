@@ -1,81 +1,121 @@
-import { Github, Linkedin, Mail } from "lucide-react";
+import { Reveal } from "@/components/reveal";
 import { ContactForm } from "@/components/contact-form";
-import { SectionHeading } from "@/components/section-heading";
 import { contactContent, socialLinks } from "@/data/portfolio";
+
+const ROWS = [
+  { href: `mailto:${socialLinks.email}`, glyph: "✉", label: "Email", sub: socialLinks.email, external: false },
+  { href: socialLinks.github, glyph: "</>", label: "GitHub", sub: socialLinks.githubHandle, external: true },
+  { href: socialLinks.linkedin, glyph: "in", label: "LinkedIn", sub: socialLinks.linkedinName, external: true },
+];
 
 export function Contact() {
   return (
-    <section
-      id="contact"
-      className="grid gap-10 rounded-3xl border border-black/5 bg-white/70 p-8 shadow-2xl shadow-emerald-500/10 backdrop-blur dark:border-white/10 dark:bg-white/[0.03] lg:grid-cols-2"
-    >
-      <div className="space-y-6">
-        <SectionHeading label="Contacto" eyebrow="Construyamos algo" />
-        <p className="text-base leading-relaxed text-zinc-600 dark:text-zinc-300">
-          {contactContent.copy}
-        </p>
-        <div className="rounded-2xl border border-black/5 bg-white/60 p-4 text-sm text-zinc-500 dark:border-white/10 dark:bg-white/[0.02] dark:text-zinc-300">
-          <p className="font-semibold text-zinc-900 dark:text-white">
-            {contactContent.responseTime}
-          </p>
-          <p className="mt-1">También podés escribirme por cualquiera de estos canales:</p>
-        </div>
-        <ul className="space-y-3 text-sm text-zinc-600 dark:text-zinc-300">
-          <li className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
-              <Mail size={17} />
-            </span>
-            <a
-              href={`mailto:${socialLinks.email}`}
-              className="font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-white"
+    <section id="contacto" style={{ padding: "90px 0" }}>
+      <Reveal>
+        <div
+          style={{
+            position: "relative",
+            padding: "clamp(32px, 5vw, 64px)",
+            borderRadius: 26,
+            border: "1px solid var(--border)",
+            background: "var(--surface)",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 0,
+              opacity: 0.6,
+              background: "radial-gradient(600px 300px at 80% -20%, var(--glow), transparent 60%)",
+              pointerEvents: "none",
+            }}
+          />
+          <div style={{ position: "relative" }}>
+            <span className="et-eyebrow">06 / CONTACTO</span>
+            <h2
+              style={{
+                margin: "14px 0 18px",
+                fontSize: "clamp(30px, 5vw, 52px)",
+                fontWeight: 600,
+                letterSpacing: "-0.02em",
+                maxWidth: "18ch",
+              }}
             >
-              {socialLinks.email}
-            </a>
-          </li>
-          <li className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-zinc-500/10 text-zinc-700 dark:text-zinc-100">
-              <Github size={17} />
-            </span>
-            <a
-              href={socialLinks.github}
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-white"
-            >
-              github.com/emitejadaa
-            </a>
-          </li>
-          <li className="flex items-center gap-3">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-300">
-              <Linkedin size={17} />
-            </span>
-            <a
-              href={socialLinks.linkedin}
-              target="_blank"
-              rel="noreferrer"
-              className="font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-white"
-            >
-              LinkedIn
-            </a>
-          </li>
-        </ul>
-      </div>
+              Hagamos algo juntos.
+            </h2>
 
-      <div className="rounded-3xl border border-black/5 bg-white/70 p-6 shadow-lg dark:border-white/10 dark:bg-white/[0.02]">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">
-          Enviar mensaje
-        </p>
-        <h3 className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-white">
-          Contame sobre tu proyecto
-        </h3>
-        <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-          Recibirás un correo para confirmar el envío. Podés continuar el hilo en
-          el canal que prefieras.
-        </p>
-        <div className="mt-6">
-          <ContactForm emailTo={socialLinks.email} />
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(290px, 1fr))",
+                gap: "clamp(28px, 5vw, 56px)",
+                alignItems: "start",
+              }}
+            >
+              <div>
+                <p style={{ maxWidth: "42ch", margin: "0 0 28px", color: "var(--muted)", fontSize: 17, lineHeight: 1.6 }}>
+                  {contactContent.copy}
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {ROWS.map((r) => (
+                    <a
+                      key={r.label}
+                      data-cursor=""
+                      href={r.href}
+                      target={r.external ? "_blank" : undefined}
+                      rel={r.external ? "noreferrer" : undefined}
+                      className="et-row"
+                    >
+                      <span
+                        className="et-glyph font-mono"
+                        style={{ width: 38, height: 38, fontSize: 14, fontWeight: 700 }}
+                        aria-hidden="true"
+                      >
+                        {r.glyph}
+                      </span>
+                      <span style={{ display: "flex", flexDirection: "column" }}>
+                        <span style={{ fontWeight: 600, fontSize: 15 }}>{r.label}</span>
+                        <span className="font-mono" style={{ fontSize: 12, color: "var(--muted)" }}>
+                          {r.sub}
+                        </span>
+                      </span>
+                    </a>
+                  ))}
+                </div>
+                <div
+                  className="font-mono"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginTop: 24,
+                    fontSize: 12,
+                    color: "var(--muted)",
+                  }}
+                >
+                  <span className="et-dot" aria-hidden="true" />
+                  {contactContent.responseTime}
+                </div>
+              </div>
+
+              <div
+                style={{
+                  borderRadius: 20,
+                  border: "1px solid var(--border)",
+                  background: "var(--bg2)",
+                  padding: "clamp(22px, 3vw, 30px)",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                <ContactForm emailTo={socialLinks.email} />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }

@@ -1,31 +1,39 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Nav } from "@/components/nav";
-import { Footer } from "@/components/footer";
+import { ScrollProgress } from "@/components/fx/scroll-progress";
+import { ParticleField } from "@/components/fx/particle-field";
+import { GridOverlay } from "@/components/fx/grid-overlay";
+import { CustomCursor } from "@/components/fx/custom-cursor";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://emiliano-tejada.vercel.app"),
-  title: "Emiliano Tejada | Hardware | Backend | IA",
+  title: "Emiliano Tejada | Hardware · Backend · IA",
   description:
     "Portfolio de Emiliano Tejada: proyectos de hardware, backend e inteligencia artificial listos para producción.",
   openGraph: {
-    title: "Emiliano Tejada | Hardware | Backend | IA",
+    title: "Emiliano Tejada | Hardware · Backend · IA",
     description:
       "Ingeniero en formación que integra electrónica, backend e IA para crear soluciones reales.",
     type: "website",
     url: "https://emiliano-tejada.vercel.app",
+    locale: "es_AR",
   },
   twitter: {
     card: "summary_large_image",
@@ -37,18 +45,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen text-zinc-900 antialiased dark:text-zinc-100`}
+        className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}
       >
         <ThemeProvider>
+          <ScrollProgress />
+          <ParticleField />
+          <GridOverlay />
+          <CustomCursor />
           <Nav />
           {children}
-          <Footer />
         </ThemeProvider>
       </body>
     </html>

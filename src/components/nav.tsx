@@ -1,61 +1,179 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { scrollToId } from "@/lib/scroll";
 
-const links = [
-  { href: "#projects", label: "Proyectos" },
-  { href: "#experience", label: "Experiencia" },
-  { href: "#skills", label: "Skills" },
-  { href: "#contact", label: "Contacto" },
+const SECTIONS: [string, string][] = [
+  ["Stack", "stack"],
+  ["Proyectos", "proyectos"],
+  ["Experiencia", "experiencia"],
+  ["Contacto", "contacto"],
 ];
 
 export function Nav() {
-  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
 
+  const go = (id: string) => {
+    setOpen(false);
+    scrollToId(id);
+  };
+  const home = () => {
+    setOpen(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // lock scroll while the mobile menu is open
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 16);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
 
   return (
-    <header className="sticky top-0 z-50 px-4 pt-4">
+    <>
       <nav
-        className={`mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-full px-4 py-2.5 transition-all duration-300 sm:px-6 ${
-          scrolled
-            ? "border border-black/5 bg-white/70 shadow-lg shadow-black/5 backdrop-blur-xl dark:border-white/10 dark:bg-zinc-950/60"
-            : "border border-transparent bg-transparent"
-        }`}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 16,
+          padding: "16px clamp(20px, 5vw, 56px)",
+          backdropFilter: "blur(14px)",
+          WebkitBackdropFilter: "blur(14px)",
+          background: "var(--nav)",
+          borderBottom: "1px solid var(--border)",
+        }}
       >
-        <Link
-          href="#top"
-          className="group inline-flex items-center gap-2 text-sm font-bold tracking-tight text-zinc-900 dark:text-white"
+        <button
+          data-cursor=""
+          onClick={home}
+          aria-label="Inicio"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "var(--text)",
+          }}
         >
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 text-xs font-bold text-white shadow-md shadow-emerald-500/30">
+          <span
+            className="font-mono"
+            style={{
+              display: "inline-flex",
+              width: 30,
+              height: 30,
+              alignItems: "center",
+              justifyContent: "center",
+              border: "1px solid var(--accent)",
+              borderRadius: 8,
+              fontWeight: 600,
+              fontSize: 14,
+              color: "var(--accent)",
+              boxShadow: "0 0 14px var(--glow) inset",
+            }}
+          >
             ET
           </span>
-          <span className="hidden sm:inline">Emiliano Tejada</span>
-        </Link>
+          <span
+            className="font-mono"
+            style={{ fontSize: 13, letterSpacing: "0.04em", color: "var(--muted)" }}
+          >
+            emiliano<span style={{ color: "var(--accent)" }}>.dev</span>
+          </span>
+        </button>
 
-        <div className="flex items-center gap-1">
-          <ul className="hidden items-center gap-1 md:flex">
-            {links.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="rounded-full px-3 py-1.5 text-sm font-medium text-zinc-600 transition hover:bg-black/5 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-white/10 dark:hover:text-white"
-                >
-                  {link.label}
-                </Link>
-              </li>
+        <div style={{ display: "flex", alignItems: "center", gap: "clamp(8px, 2vw, 26px)" }}>
+          <div className="hidden md:flex" style={{ alignItems: "center", gap: "clamp(12px, 2vw, 26px)" }}>
+            {SECTIONS.map(([label, id]) => (
+              <button key={id} data-cursor="" className="et-navlink" onClick={() => go(id)}>
+                {label}
+              </button>
             ))}
-          </ul>
+          </div>
+
           <ThemeToggle />
+
+          <button
+            data-cursor=""
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Menú"
+            aria-expanded={open}
+            className="md:hidden et-btn et-btn-ghost"
+            style={{ width: 40, height: 40, padding: 0, borderRadius: 11, fontSize: 18 }}
+          >
+            {open ? "✕" : "☰"}
+          </button>
         </div>
       </nav>
-    </header>
+
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          className="et-detail-in md:hidden"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 45,
+            background: "rgba(2,5,12,0.6)",
+            backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: "absolute",
+              top: 74,
+              left: "clamp(14px, 4vw, 24px)",
+              right: "clamp(14px, 4vw, 24px)",
+              padding: 14,
+              borderRadius: 18,
+              border: "1px solid var(--border)",
+              background: "var(--bg2)",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
+            }}
+          >
+            {SECTIONS.map(([label, id]) => (
+              <button
+                key={id}
+                data-cursor=""
+                onClick={() => go(id)}
+                className="font-mono"
+                style={{
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: 16,
+                  borderRadius: 12,
+                  fontSize: 16,
+                  color: "var(--text)",
+                  background: "none",
+                  border: "none",
+                  textAlign: "left",
+                }}
+              >
+                <span>{label}</span>
+                <span style={{ color: "var(--accent)" }}>→</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

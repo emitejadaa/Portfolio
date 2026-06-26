@@ -1,22 +1,44 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 
+/** Mono pill toggle. Shows the current theme label; click switches. */
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const isDark = resolvedTheme !== "light";
+  const label = mounted ? (isDark ? "Oscuro" : "Claro") : "Oscuro";
 
   return (
     <button
+      data-cursor=""
       type="button"
-      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
       aria-label="Cambiar tema"
-      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-black/10 bg-white/70 text-zinc-700 shadow-sm backdrop-blur transition hover:border-emerald-400/60 hover:text-emerald-600 dark:border-white/10 dark:bg-white/5 dark:text-zinc-200 dark:hover:text-emerald-300"
+      className="et-btn et-btn-ghost"
+      style={{
+        gap: 7,
+        padding: "7px 12px",
+        borderRadius: 999,
+        fontFamily: "var(--font-jetbrains-mono), monospace",
+        fontSize: 12,
+        fontWeight: 500,
+      }}
     >
-      {/* next-themes aplica la clase .dark antes del paint, así que la
-          visibilidad por CSS evita el parpadeo y el mismatch de hidratación. */}
-      <Moon size={16} className="dark:hidden" />
-      <Sun size={16} className="hidden dark:block" />
+      <span
+        aria-hidden="true"
+        style={{
+          width: 8,
+          height: 8,
+          borderRadius: "50%",
+          background: "var(--accent)",
+          boxShadow: "0 0 10px var(--accent)",
+        }}
+      />
+      {label}
     </button>
   );
 }

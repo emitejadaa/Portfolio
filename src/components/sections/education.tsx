@@ -1,58 +1,102 @@
-import { ArrowUpRight } from "lucide-react";
-import { SectionHeading } from "@/components/section-heading";
 import { Reveal } from "@/components/reveal";
-import { achievements, education } from "@/data/portfolio";
+import { achievements, education, githubStats } from "@/data/portfolio";
 
-export function Education() {
+export function Education({ repos }: { repos: number }) {
   return (
-    <section className="grid gap-10 lg:grid-cols-2">
-      <div>
-        <SectionHeading label="Educación & Certificaciones" eyebrow="Formación" />
-        <div className="space-y-4">
-          {education.map((item, i) => (
-            <Reveal key={item.institution} delay={i * 70}>
-              <article className="rounded-2xl border border-black/5 bg-white/60 p-5 backdrop-blur dark:border-white/10 dark:bg-white/[0.02]">
-                <p className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-600 dark:text-emerald-400">
-                  {item.period}
-                </p>
-                <h3 className="mt-2 text-lg font-semibold text-zinc-900 dark:text-white">
-                  {item.institution}
-                </h3>
-                <p className="mt-1 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-                  {item.detail}
-                </p>
-              </article>
-            </Reveal>
+    <section
+      id="sobre-mi"
+      style={{
+        padding: "80px 0",
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+        gap: 44,
+      }}
+    >
+      <Reveal>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 14, marginBottom: 30 }}>
+          <span className="et-eyebrow">04 / EDUCACIÓN</span>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          {education.map((ed) => (
+            <div
+              key={ed.institution}
+              className="et-card"
+              style={{ padding: 20, borderRadius: 16 }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start" }}>
+                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 600 }}>{ed.institution}</h3>
+                <span className="font-mono" style={{ fontSize: 12, color: "var(--accent)", whiteSpace: "nowrap" }}>
+                  {ed.period}
+                </span>
+              </div>
+              <p style={{ margin: "10px 0 0", color: "var(--muted)", fontSize: 14, lineHeight: 1.55 }}>{ed.detail}</p>
+            </div>
           ))}
         </div>
-      </div>
+      </Reveal>
 
-      <div>
-        <SectionHeading label="Reconocimientos" eyebrow="Highlights" />
-        <div className="space-y-4">
-          {achievements.map((achievement, i) => (
-            <Reveal key={achievement.title} delay={i * 70}>
-              <article className="rounded-2xl border border-emerald-500/15 bg-gradient-to-br from-emerald-500/10 to-cyan-500/5 p-5 text-zinc-800 shadow-sm dark:text-white">
-                <h3 className="text-base font-semibold">{achievement.title}</h3>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-200">
-                  {achievement.description}
-                </p>
-                {achievement.site && (
-                  <a
-                    href={achievement.site}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-emerald-700 transition hover:text-emerald-800 dark:text-emerald-300 dark:hover:text-emerald-200"
-                  >
-                    Visitar
-                    <ArrowUpRight size={14} />
-                  </a>
-                )}
-              </article>
-            </Reveal>
-          ))}
+      <Reveal delay={80}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 14, marginBottom: 30 }}>
+          <span className="et-eyebrow">05 / LOGROS</span>
         </div>
-      </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          {achievements.map((ac) => (
+            <a
+              key={ac.title}
+              data-cursor=""
+              href={ac.site}
+              target="_blank"
+              rel="noreferrer"
+              className="et-card et-card-hover"
+              style={{
+                textDecoration: "none",
+                color: "inherit",
+                padding: 20,
+                borderRadius: 16,
+                display: "flex",
+                gap: 14,
+                alignItems: "center",
+              }}
+            >
+              <span className="et-glyph" style={{ width: 42, height: 42, borderRadius: 12, background: "var(--surface2)" }}>
+                ★
+              </span>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{ac.title}</h3>
+                <p style={{ margin: "5px 0 0", color: "var(--muted)", fontSize: 14 }}>{ac.description}</p>
+              </div>
+            </a>
+          ))}
+
+          <div
+            style={{
+              padding: 20,
+              borderRadius: 16,
+              border: "1px dashed var(--border)",
+              display: "flex",
+              justifyContent: "space-around",
+              textAlign: "center",
+            }}
+          >
+            <div>
+              <div className="font-mono" style={{ fontSize: 30, fontWeight: 600, color: "var(--accent)" }}>
+                {repos}+
+              </div>
+              <div className="font-mono" style={{ fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
+                REPOS PÚBLICOS
+              </div>
+            </div>
+            <div>
+              <div className="font-mono" style={{ fontSize: 30, fontWeight: 600, color: "var(--accent)" }}>
+                {githubStats.languages.length}
+              </div>
+              <div className="font-mono" style={{ fontSize: 11, color: "var(--muted)", marginTop: 4 }}>
+                LENGUAJES
+              </div>
+            </div>
+          </div>
+        </div>
+      </Reveal>
     </section>
   );
 }

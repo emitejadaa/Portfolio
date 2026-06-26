@@ -1,29 +1,32 @@
-import { Reveal } from "@/components/reveal";
-import { GithubStats } from "@/components/github-stats";
 import { Hero } from "@/components/sections/hero";
+import { Stack } from "@/components/sections/stack";
 import { Projects } from "@/components/sections/projects";
 import { Experience } from "@/components/sections/experience";
-import { Skills } from "@/components/sections/skills";
 import { Education } from "@/components/sections/education";
 import { Contact } from "@/components/sections/contact";
+import { Footer } from "@/components/footer";
+import { getGithubRepos } from "@/lib/github";
 
-export default function Home() {
+export default async function Home() {
+  const repos = await getGithubRepos();
+
   return (
-    <main className="mx-auto flex max-w-6xl flex-col gap-20 px-6 py-12 lg:px-10 lg:py-16">
+    <main
+      style={{
+        position: "relative",
+        zIndex: 1,
+        maxWidth: 1160,
+        margin: "0 auto",
+        padding: "0 clamp(20px, 5vw, 56px)",
+      }}
+    >
       <Hero />
-
-      <Reveal>
-        <GithubStats />
-      </Reveal>
-
+      <Stack />
       <Projects />
       <Experience />
-      <Skills />
-      <Education />
-
-      <Reveal>
-        <Contact />
-      </Reveal>
+      <Education repos={repos} />
+      <Contact />
+      <Footer />
     </main>
   );
 }
