@@ -1,64 +1,63 @@
-import type { Metadata } from "next";
-import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Doto, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Nav } from "@/components/nav";
-import { ScrollProgress } from "@/components/fx/scroll-progress";
-import { ParticleField } from "@/components/fx/particle-field";
-import { GridOverlay } from "@/components/fx/grid-overlay";
-import { CustomCursor } from "@/components/fx/custom-cursor";
+import { identity, SITE_URL } from "@/content/profile";
+import { getReadme } from "@/lib/readme";
+import { baseOpenGraph } from "@/lib/seo";
+import { OSRoot } from "@/os/OSRoot";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
+const geist = Geist({ variable: "--font-geist", subsets: ["latin", "latin-ext"], display: "swap" });
+const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "latin-ext"], display: "swap" });
+const doto = Doto({ variable: "--font-doto", subsets: ["latin"], weight: ["600", "800"], display: "swap" });
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  display: "swap",
-});
+const description =
+  "Portfolio de Emiliano Tejada: un escritorio que se usa como un sistema operativo. Proyectos de hardware, backend e inteligencia artificial.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://emiliano-tejada.vercel.app"),
-  title: "Emiliano Tejada | Hardware · Backend · IA",
-  description:
-    "Portfolio de Emiliano Tejada: proyectos de hardware, backend e inteligencia artificial listos para producción.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: identity.tabTitle.es, template: "%s · Emiliano Tejada" },
+  description,
+  applicationName: "Emiliano Tejada",
+  authors: [{ name: identity.name, url: SITE_URL }],
+  keywords: ["Emiliano Tejada", "portfolio", "hardware", "backend", "inteligencia artificial", "Buenos Aires"],
+  alternates: { canonical: "/" },
+  // No og:url here: pages inherit this object, so each shared link keeps its own URL.
+  // The image comes from opengraph-image.tsx; X copies title, text and image from Open Graph.
   openGraph: {
-    title: "Emiliano Tejada | Hardware · Backend · IA",
-    description:
-      "Ingeniero en formación que integra electrónica, backend e IA para crear soluciones reales.",
-    type: "website",
-    url: "https://emiliano-tejada.vercel.app",
-    locale: "es_AR",
+    ...baseOpenGraph,
+    title: identity.tabTitle.es,
+    description: `${identity.headline.es} ${identity.subhead.es}`,
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Emiliano Tejada | Portfolio",
-    description:
-      "Proyectos de hardware, backend e inteligencia artificial construidos con enfoque en usuarios reales.",
-  },
+  twitter: { card: "summary_large_image" },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#07080a" },
+    { media: "(prefers-color-scheme: light)", color: "#f3f1ec" },
+  ],
+};
+
+/** Runs before paint: mode (?theme → saved → prefers-color-scheme), language and first visit. */
+const bootScript = `(function(){try{var d=document.documentElement,q=new URLSearchParams(location.search),t=q.get('theme');if(t!=='daylight'&&t!=='midnight'){t=localStorage.getItem('tejada.theme')}if(t!=='daylight'&&t!=='midnight'){t=matchMedia('(prefers-color-scheme: light)').matches?'daylight':'midnight'}d.dataset.theme=t;var l=localStorage.getItem('tejada.lang');if(l!=='es'&&l!=='en'){l=(navigator.language||'es').toLowerCase().indexOf('en')===0?'en':'es'}d.lang=l;d.dataset.lang=l;if(!localStorage.getItem('tejada.visited')){d.dataset.first='1'}}catch(e){}})();`;
+
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const readme = await getReadme();
   return (
-    <html lang="es" suppressHydrationWarning>
-      <body
-        className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}
-      >
-        <ThemeProvider>
-          <ScrollProgress />
-          <ParticleField />
-          <GridOverlay />
-          <CustomCursor />
-          <Nav />
-          {children}
-        </ThemeProvider>
+    <html
+      lang="es"
+      data-theme="midnight"
+      className={`${geist.variable} ${geistMono.variable} ${doto.variable}`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: bootScript }} />
+      </head>
+      <body>
+        <OSRoot readme={readme}>{children}</OSRoot>
       </body>
     </html>
   );
