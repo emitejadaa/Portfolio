@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { ui } from "@/content/ui";
 import { AppIcon, appIconProps } from "../AppIcon";
 import { appOf, winIcon, winName, type SingletonApp } from "../apps";
-import { registerLaunchRect, setLocalFlag, useLocalFlag, usePrefersReducedMotion } from "../hooks";
+import { registerLaunchRect, setLocalFlag, useLocalFlag } from "../hooks";
+import { useReducedMotion } from "../prefs";
 import { useLocale, useT } from "../i18n";
 import { useOS, useOSStore, type Win } from "../store";
 
@@ -18,7 +19,7 @@ export function Dock() {
   const mouseX = useMotionValue(Infinity);
   const windows = useOS((s) => s.windows);
   const minimized = windows.filter((w) => w.minimized);
-  const reduced = usePrefersReducedMotion();
+  const reduced = useReducedMotion();
   const contactSeen = useLocalFlag("tejada.contactSeen");
   const contactOpen = windows.some((w) => w.key === "contact");
 
@@ -54,9 +55,20 @@ export function Dock() {
 }
 
 function useMagnify(mouseX: MotionValue<number>, ref: React.RefObject<HTMLElement | null>) {
+  // The icon's resting center, measured once per visit: reading layout on every move while the icons
+  // resize would force a layout per frame.
+  const center = useRef<number | null>(null);
   const distance = useTransform(mouseX, (v) => {
-    const r = ref.current?.getBoundingClientRect();
-    return r ? v - (r.left + r.width / 2) : Infinity;
+    if (!Number.isFinite(v)) {
+      center.current = null;
+      return Infinity;
+    }
+    if (center.current === null) {
+      const r = ref.current?.getBoundingClientRect();
+      if (!r) return Infinity;
+      center.current = r.left + r.width / 2;
+    }
+    return v - center.current;
   });
   // M·04 Dock + hover: 60 → 70 vecinos → 84 bajo el cursor
   const target = useTransform(distance, [-150, -75, 0, 75, 150], [BASE, BASE + 10, PEAK, BASE + 10, BASE]);
@@ -123,8 +135,8 @@ function DockItem({
       <AnimatePresence>
         {hover ? (
           <motion.span
-            initial={{ opacity: 0, y: 6, filter: "blur(4px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4, transition: { duration: 0.12 } }}
             transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
             className="dock-tooltip pointer-events-none absolute -top-11 left-1/2 -translate-x-1/2 rounded-lg px-3 py-1.5 text-[13px] whitespace-nowrap"

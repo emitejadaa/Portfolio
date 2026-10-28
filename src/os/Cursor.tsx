@@ -1,68 +1,94 @@
 "use client";
 
-import { motion, useMotionValue, useSpring } from "motion/react";
-import { useEffect, useState } from "react";
-import { useMediaQuery, usePrefersReducedMotion } from "./hooks";
+import { useEffect, useRef } from "react";
+import { useMediaQuery } from "./hooks";
+import { usePrefs, useReducedMotion } from "./prefs";
 
-/** M·02 Cursor + magnetismo: un halo que sigue al puntero y crece sobre lo accionable. */
+/**
+ * M·02 Cursor + magnetismo: un halo que sigue al puntero y crece sobre lo accionable.
+ * No React state per move: pointer events only record the target, one rAF loop eases the halo
+ * toward it and stops as soon as it arrives. Size and fade are CSS transitions on an inner element.
+ */
 export function Cursor() {
-  const reduced = usePrefersReducedMotion();
+  const reduced = useReducedMotion();
+  const { cursor } = usePrefs();
   const fine = useMediaQuery("(pointer: fine)");
-  const enabled = fine && !reduced;
-  const [state, setState] = useState<"idle" | "action" | "text" | "hidden">("hidden");
-  const x = useMotionValue(-100);
-  const y = useMotionValue(-100);
-  const sx = useSpring(x, { stiffness: 900, damping: 60, mass: 0.4 });
-  const sy = useSpring(y, { stiffness: 900, damping: 60, mass: 0.4 });
+  const enabled = fine && !reduced && cursor;
+  const haloRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!enabled) return;
-    let magnet: HTMLElement | null = null;
+    const halo = haloRef.current;
+    if (!enabled || !halo) return;
+    const pos = { x: -100, y: -100 };
+    const target = { x: -100, y: -100 };
+    let raf = 0;
+    let lastEl: Element | null = null;
+    let magnet: { el: HTMLElement; cx: number; cy: number } | null = null;
+
     const release = () => {
-      if (magnet) magnet.style.transform = "";
+      if (magnet) magnet.el.style.transform = "";
       magnet = null;
     };
+    const step = () => {
+      pos.x += (target.x - pos.x) * 0.38;
+      pos.y += (target.y - pos.y) * 0.38;
+      if (Math.abs(target.x - pos.x) < 0.3 && Math.abs(target.y - pos.y) < 0.3) {
+        pos.x = target.x;
+        pos.y = target.y;
+        raf = 0;
+      } else raf = requestAnimationFrame(step);
+      halo.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0)`;
+    };
     const onMove = (e: PointerEvent) => {
-      x.set(e.clientX);
-      y.set(e.clientY);
-      const el = e.target as HTMLElement | null;
-      if (!el?.closest) return;
-      if (el.closest("input, textarea, [contenteditable=true], .terminal")) setState("text");
-      else if (el.closest("a, button, [role=button], [role=option], [role=tab], summary")) setState("action");
-      else setState("idle");
+      target.x = e.clientX;
+      target.y = e.clientY;
+      if (!raf) raf = requestAnimationFrame(step);
 
-      const m = el.closest<HTMLElement>("[data-magnetic]");
-      if (m !== magnet) release();
-      if (m) {
-        magnet = m;
-        const r = m.getBoundingClientRect();
-        const dx = (e.clientX - (r.left + r.width / 2)) * 0.18;
-        const dy = (e.clientY - (r.top + r.height / 2)) * 0.18;
-        m.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
+      const el = e.target as Element | null;
+      if (el !== lastEl) {
+        lastEl = el;
+        const state = !el?.closest
+          ? "idle"
+          : el.closest("input, textarea, [contenteditable=true], .terminal")
+            ? "text"
+            : el.closest("a, button, [role=button], [role=option], [role=tab], [role=switch], summary")
+              ? "action"
+              : "idle";
+        halo.dataset.state = state;
+        const m = el?.closest?.<HTMLElement>("[data-magnetic]") ?? null;
+        if (m !== magnet?.el) {
+          release();
+          if (m) {
+            const r = m.getBoundingClientRect();
+            magnet = { el: m, cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
+          }
+        }
+      }
+      if (magnet) {
+        const dx = (e.clientX - magnet.cx) * 0.18;
+        const dy = (e.clientY - magnet.cy) * 0.18;
+        magnet.el.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)`;
       }
     };
     const onLeave = () => {
-      setState("hidden");
+      halo.dataset.state = "hidden";
+      lastEl = null;
       release();
     };
     window.addEventListener("pointermove", onMove, { passive: true });
     document.documentElement.addEventListener("pointerleave", onLeave);
     return () => {
+      cancelAnimationFrame(raf);
       window.removeEventListener("pointermove", onMove);
       document.documentElement.removeEventListener("pointerleave", onLeave);
       release();
     };
-  }, [enabled, x, y]);
+  }, [enabled]);
 
   if (!enabled) return null;
-  const size = state === "action" ? 44 : state === "text" ? 6 : 26;
   return (
-    <motion.div
-      aria-hidden="true"
-      className="cursor-halo pointer-events-none fixed top-0 left-0 z-[500] rounded-full"
-      style={{ x: sx, y: sy, translateX: "-50%", translateY: "-50%" }}
-      animate={{ width: size, height: size, opacity: state === "hidden" ? 0 : state === "text" ? 0 : 1 }}
-      transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
-    />
+    <div ref={haloRef} aria-hidden="true" data-state="hidden" className="cursor pointer-events-none fixed top-0 left-0 z-[500]">
+      <div className="cursor-halo" />
+    </div>
   );
 }

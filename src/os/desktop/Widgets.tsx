@@ -29,7 +29,7 @@ function Widget({
       type={onClick ? "button" : undefined}
       onClick={onClick}
       aria-label={ariaLabel}
-      className={`card ${onClick ? "card-hover cursor-pointer" : ""} flex flex-col p-3.5 text-left ${className}`}
+      className={`card @container ${onClick ? "card-hover cursor-pointer" : ""} flex w-full flex-col p-3.5 text-left ${className}`}
     >
       <span className="t-label flex items-center gap-1.5 text-text-2">{label}</span>
       {children}
@@ -40,8 +40,8 @@ function Widget({
 export function ClockWidget() {
   const { time, date } = useClockBA();
   return (
-    <Widget label={`${identity.city} · ${identity.utcLabel}`} className="h-[120px] justify-between">
-      <span className="t-dot text-[52px] leading-none" suppressHydrationWarning>
+    <Widget label={`${identity.city} · ${identity.utcLabel}`} className="min-h-[120px] justify-between">
+      <span className="t-dot text-[min(52px,25cqi)] leading-none whitespace-nowrap" suppressHydrationWarning>
         {time}
       </span>
       <span className="font-mono text-[12px] text-text-2 capitalize" suppressHydrationWarning>
@@ -72,15 +72,22 @@ export function WeatherWidget() {
   const t = useT();
   const { data, error } = useApi<WeatherResponse>("/api/weather", 15 * 60 * 1000);
   return (
-    <Widget label={`${t(ui.widgets.weather)} · BA`} className="h-[120px] justify-between">
-      {data ? (
+    <Widget
+      label={
         <>
-          <div className="flex items-end justify-between">
-            <span className="t-dot text-[44px] leading-none">{Math.round(data.temp)}°</span>
-            <span className="text-[22px] leading-none text-text-2" aria-hidden="true">
+          {t(ui.widgets.weather)}
+          {data ? (
+            <span className="ml-auto text-[17px] leading-none tracking-normal" aria-hidden="true">
               {WEATHER_GLYPH(data.code, data.isDay)}
             </span>
-          </div>
+          ) : null}
+        </>
+      }
+      className="min-h-[120px] justify-between"
+    >
+      {data ? (
+        <>
+          <span className="t-dot text-[min(44px,46cqi)] leading-none whitespace-nowrap">{Math.round(data.temp)}°</span>
           <span className="truncate font-mono text-[11.5px] text-text-2">
             {t(weatherLabel(data.code))} · {t(ui.widgets.max)} {Math.round(data.max)}° {t(ui.widgets.min)} {Math.round(data.min)}°
           </span>
@@ -99,7 +106,7 @@ export function ModeWidget() {
   return (
     <Widget
       label={t(ui.widgets.mode)}
-      className="h-[120px] justify-between"
+      className="min-h-[120px] justify-between"
       onClick={() => switchTheme(store)}
       ariaLabel={theme === "midnight" ? t(ui.menu.modeToDaylight) : t(ui.menu.modeToMidnight)}
     >
@@ -126,7 +133,7 @@ export function StatusWidget() {
           {t(ui.widgets.status)}
         </>
       }
-      className="h-[120px] justify-between"
+      className="min-h-[120px] justify-between"
       onClick={() => store.getState().openWindow("contact")}
     >
       <span className="text-[13px] leading-snug">
@@ -147,10 +154,10 @@ export function LastDeployWidget() {
   const { data, error } = useApi<DeploysResponse>("/api/deploys", 10 * 60 * 1000);
   const latest = data?.latest;
   return (
-    <Widget label={t(ui.widgets.lastDeploy)} className="h-[120px] justify-between">
+    <Widget label={t(ui.widgets.lastDeploy)} className="min-h-[120px] justify-between">
       {latest ? (
         <>
-          <span className="t-dot text-[30px] leading-none" suppressHydrationWarning>
+          <span className="t-dot text-[min(30px,30cqi)] leading-none whitespace-nowrap" suppressHydrationWarning>
             {now ? relativeTime(latest.date, locale, now).replace(/^hace /, "") : "··"}
           </span>
           <span className="truncate font-mono text-[12px] text-text-2">
@@ -168,6 +175,8 @@ export function LastDeployWidget() {
 const LEVELS_MIDNIGHT = ["rgb(255 255 255 / 0.07)", "rgb(59 59 255 / 0.55)", "rgb(139 92 255 / 0.75)", "rgb(176 150 255 / 0.95)", "#d4ff3a"];
 const LEVELS_DAYLIGHT = ["rgb(17 17 16 / 0.08)", "rgb(31 59 255 / 0.3)", "rgb(31 59 255 / 0.55)", "rgb(31 59 255 / 0.8)", "#111110"];
 
+const PLACEHOLDER_WEEKS = Array.from({ length: 53 }, () => Array<number>(7).fill(0));
+
 export function GitHubWidget() {
   const t = useT();
   const locale = useLocale();
@@ -175,7 +184,7 @@ export function GitHubWidget() {
   const theme = useOS((s) => s.theme);
   const { data, error } = useApi<GitHubResponse>("/api/github", 30 * 60 * 1000);
   const levels = theme === "daylight" ? LEVELS_DAYLIGHT : LEVELS_MIDNIGHT;
-  const weeks = data?.weeks ?? [];
+  const weeks = data?.weeks?.length ? data.weeks : PLACEHOLDER_WEEKS;
 
   return (
     <Widget
@@ -192,15 +201,15 @@ export function GitHubWidget() {
       </div>
       <div
         className="grid grid-flow-col gap-[2px]"
-        style={{ gridTemplateRows: "repeat(7, 5px)", gridAutoColumns: "5px" }}
+        style={{ gridTemplateRows: "repeat(7, auto)", gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
         role="img"
         aria-label={data ? `${data.total} ${t(ui.widgets.contributions)}` : t(ui.widgets.loading)}
       >
-        {(weeks.length ? weeks : Array.from({ length: 53 }, () => Array<number>(7).fill(0))).map((week, wi) =>
+        {weeks.map((week, wi) =>
           week.map((lvl, di) => (
             <span
               key={`${wi}-${di}`}
-              className="rounded-full"
+              className="aspect-square rounded-full"
               style={{ background: levels[Math.max(0, Math.min(4, lvl))], gridColumn: wi + 1, gridRow: di + 1 }}
             />
           )),
@@ -272,12 +281,13 @@ export function ServicesWidget() {
   );
 }
 
-/** Desktop right column: 3 × 120 px small cells, wider cards span the row. */
+/** Desktop right column: 3 × 120 px small cells, wider cards span the row. Scrolls on its own when the
+ *  screen is too short; the 8 px padding keeps hover lifts and Daylight's ink shadows from being clipped. */
 export function WidgetColumn() {
   return (
     <aside
       aria-label="Widgets"
-      className="widget-column pointer-events-auto absolute top-[56px] right-4 grid w-[384px] grid-cols-3 content-start gap-3"
+      className="widget-column scroll-area pointer-events-auto absolute top-[48px] right-2 bottom-[104px] grid w-[400px] grid-cols-3 content-start gap-3 p-2"
     >
       <div className="col-span-2">
         <ClockWidget />

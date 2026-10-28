@@ -5,7 +5,7 @@ import { useRef, useState } from "react";
 import { availability, identity } from "@/content/profile";
 import { ui } from "@/content/ui";
 import type { SingletonApp } from "../apps";
-import { useClockBA, useKeys } from "../hooks";
+import { ClockText, useKeys } from "../hooks";
 import { Icon } from "../icons";
 import { useT } from "../i18n";
 import { useOS, useOSStore } from "../store";
@@ -17,7 +17,6 @@ export function MenuBar() {
   const store = useOSStore();
   const t = useT();
   const locale = useOS((s) => s.locale);
-  const { time } = useClockBA();
   const spotlightKeys = useKeys("mod", "K");
 
   const openApp = (app: SingletonApp, el: HTMLElement) => {
@@ -45,6 +44,15 @@ export function MenuBar() {
       </nav>
 
       <div className="ml-auto flex items-center gap-2.5">
+        <button
+          type="button"
+          className="menu-item grid w-8 place-items-center px-0 text-text-2 hover:text-text"
+          aria-label={t(ui.apps.prefs)}
+          title={t(ui.apps.prefs)}
+          onClick={(e) => openApp("prefs", e.currentTarget)}
+        >
+          <Icon name="sliders" size={17} />
+        </button>
         <button
           type="button"
           className="kbd h-6 px-2 transition-colors hover:text-text"
@@ -79,9 +87,7 @@ export function MenuBar() {
             </span>
           ))}
         </div>
-        <span className="t-dot min-w-[46px] text-right text-[15px] tabular-nums" aria-label={`${identity.city} ${time}`}>
-          {time}
-        </span>
+        <ClockText className="t-dot min-w-[46px] text-right text-[15px] tabular-nums" label={identity.city} />
       </div>
     </header>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { MotionConfig } from "motion/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import type { StoreApi } from "zustand";
@@ -7,11 +8,13 @@ import { getProject } from "@/content/projects";
 import { ui } from "@/content/ui";
 import type { Readme } from "@/lib/readme";
 import { isKnownPath, keyForPath, pathFor } from "./apps";
-import { ReadmeContext } from "./apps/ReadmeApp";
+import { preloadApps } from "./apps/AppContent";
+import { ReadmeContext } from "./readme-context";
 import { Desktop } from "./desktop/Desktop";
 import { Spotlight } from "./desktop/Spotlight";
 import { isTypingTarget } from "./hooks";
 import { MobileShell } from "./mobile/MobileShell";
+import { isReducedMotion, useReducedMotion } from "./prefs";
 import { BootScreen, Confetti, CrashOverlay, LockScreen, Screensaver, Toast } from "./overlays";
 import {
   createOSStore,
@@ -51,8 +54,10 @@ export function OSRoot({ readme, children }: { readme: Readme; children: ReactNo
 
 function Shell() {
   const layout = useOS((s) => s.layout);
+  const reduced = useReducedMotion();
   return (
-    <>
+    // Ajustes → Reducir movimiento (or the system setting) turns every Motion transform into a fade.
+    <MotionConfig reducedMotion={reduced ? "always" : "never"}>
       {layout !== "mobile" ? <Desktop className={layout === "ssr" ? "max-[820px]:hidden" : ""} /> : null}
       {layout !== "desktop" ? <MobileShell className={layout === "ssr" ? "min-[821px]:hidden" : ""} /> : null}
       <Spotlight />
@@ -63,7 +68,7 @@ function Shell() {
       <BootScreen />
       <CrashOverlay />
       {layout === "desktop" ? <Cursor /> : null}
-    </>
+    </MotionConfig>
   );
 }
 
@@ -109,7 +114,12 @@ function Hydrator({ store }: { store: StoreApi<OSState> }) {
     scheme.addEventListener("change", onScheme);
 
     store.getState().setHydrated();
+    // Safari has no requestIdleCallback.
+    const ric = typeof window.requestIdleCallback === "function";
+    const idle = ric ? window.requestIdleCallback(preloadApps, { timeout: 4000 }) : window.setTimeout(preloadApps, 2500);
     return () => {
+      if (ric) window.cancelIdleCallback(idle);
+      else window.clearTimeout(idle);
       mq.removeEventListener("change", applyLayout);
       scheme.removeEventListener("change", onScheme);
     };
@@ -225,7 +235,7 @@ function Hydrator({ store }: { store: StoreApi<OSState> }) {
     const id = window.setInterval(() => {
       const s = store.getState();
       if (s.layout !== "desktop" || s.phase !== "desktop" || s.screensaver || document.hidden) return;
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      if (isReducedMotion()) return;
       if (Date.now() - last > 60_000) s.setScreensaver(true);
     }, 5000);
     return () => {

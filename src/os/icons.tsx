@@ -124,4 +124,11 @@ const paths: Record<IconName, React.ReactNode> = {
     </>
   ),
   arrow: <path d="M7 17 17 7M8.5 7H17v8.5" />,
+  sliders: (
+    <>
+      <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
+      <circle cx="15" cy="7" r="2.2" />
+      <circle cx="9" cy="17" r="2.2" />
+    </>
+  ),
 };

@@ -2,7 +2,7 @@
 
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { identity } from "@/content/profile";
-import { ReadmeContext } from "../apps/ReadmeApp";
+import { ReadmeContext } from "../readme-context";
 import { useLocale } from "../i18n";
 import { useOS, useOSStore } from "../store";
 import { complete, prettyPath, runLine, type Ctx, type Line } from "./commands";

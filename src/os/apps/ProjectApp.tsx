@@ -204,8 +204,8 @@ function ProjectBody({ project, index, view }: { project: Project; index: number
               role="tabpanel"
               id={`panel-${project.slug}-${tab}`}
               aria-labelledby={`tab-${project.slug}-${tab}`}
-              initial={{ opacity: 0, y: 8, filter: "blur(4px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, transition: { duration: 0.12 } }}
               transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
               className="pt-5"
@@ -405,8 +405,8 @@ const Gallery = function Gallery({ project, ref }: { project: Project; ref: Reac
             aria-label={project.title}
           >
             <motion.div
-              initial={{ scale: 0.94, filter: "blur(8px)" }}
-              animate={{ scale: 1, filter: "blur(0px)" }}
+              initial={{ scale: 0.94 }}
+              animate={{ scale: 1 }}
               transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
               className={`relative overflow-hidden rounded-[14px] ${zoom.includes("mobile") ? "h-[86vh] aspect-[390/844]" : "aspect-[16/10] w-[min(1200px,92vw)]"}`}
             >

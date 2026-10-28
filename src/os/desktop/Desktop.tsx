@@ -10,12 +10,11 @@ import { DesktopIcons } from "./DesktopIcons";
 import { Dock } from "./Dock";
 import { Hero } from "./Hero";
 import { MenuBar } from "./MenuBar";
-import { Pasarela } from "./Pasarela";
 import { Wallpaper } from "./Wallpaper";
 import { WidgetColumn } from "./Widgets";
 import { Window, dockIdFor } from "./Window";
 
-/** L·01 Escritorio: menu bar, íconos, ventanas, widgets, dock y pasarela 3D. */
+/** L·01 Escritorio: menu bar, íconos, ventanas, widgets y dock. */
 export function Desktop({ className = "" }: { className?: string }) {
   const windows = useOS((s) => s.windows);
   const layerRef = useRef<HTMLDivElement>(null);
@@ -28,9 +27,6 @@ export function Desktop({ className = "" }: { className?: string }) {
         <DesktopIcons />
         <Hero />
         <WidgetColumn />
-        <div className="pasarela-card card absolute bottom-[18px] left-4 z-[1] h-[150px] w-[360px] overflow-hidden max-[1180px]:hidden">
-          <Pasarela className="h-full" />
-        </div>
         <span className="pointer-events-none absolute right-5 bottom-[18px] font-mono text-[11px] text-text-2 max-[1180px]:hidden">
           ◐ {identity.systemName}
         </span>

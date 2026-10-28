@@ -66,8 +66,8 @@ export function ContextMenu() {
         <motion.div
           ref={ref}
           role="menu"
-          initial={{ opacity: 0, scale: 0.96, filter: "blur(4px)" }}
-          animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.12 } }}
           transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
           className="popover fixed z-[120] w-[254px] origin-top-left rounded-[12px] p-[7px] daylight:rounded-none"

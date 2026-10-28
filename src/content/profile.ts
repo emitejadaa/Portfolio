@@ -260,19 +260,3 @@ export const events: EventItem[] = [
     linkLabel: { es: "sitio", en: "website" },
   },
 ];
-
-export type TechObject = { id: string; name: L; query: string };
-
-/** Pasarela 3D: solo forma, un único material clay. */
-export const techObjects: TechObject[] = [
-  { id: "laptop", name: { es: "Laptop", en: "Laptop" }, query: "Next.js" },
-  { id: "raspberry", name: { es: "Raspberry Pi", en: "Raspberry Pi" }, query: "Raspberry Pi" },
-  { id: "esp32", name: { es: "ESP32", en: "ESP32" }, query: "ESP32" },
-  { id: "git", name: { es: "Git", en: "Git" }, query: "GitHub" },
-  { id: "arduino", name: { es: "Arduino", en: "Arduino" }, query: "Arduino" },
-  { id: "breadboard", name: { es: "Protoboard con LED", en: "Breadboard with LED" }, query: "Electrónica" },
-  { id: "dip", name: { es: "Microcontrolador DIP", en: "DIP microcontroller" }, query: "Assembly" },
-  { id: "rack", name: { es: "Servidor en rack", en: "Rack server" }, query: "Backend" },
-  { id: "database", name: { es: "Base de datos", en: "Database" }, query: "PostgreSQL" },
-  { id: "terminal", name: { es: "Terminal", en: "Terminal" }, query: "Linux" },
-];

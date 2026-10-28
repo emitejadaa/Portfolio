@@ -1,33 +1,48 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { createElement, useEffect, useSyncExternalStore } from "react";
 import { identity } from "@/content/profile";
 
 /* ---------- Time ---------- */
 
 const listeners = new Set<() => void>();
-let tick: ReturnType<typeof setInterval> | null = null;
+let tick: ReturnType<typeof setTimeout> | null = null;
 let nowValue = 0;
+
+// Everything on screen reads HH:MM or "hace 3 d", so the clock only ticks on the minute.
+function emitNow() {
+  nowValue = Date.now();
+  listeners.forEach((l) => l());
+}
+function scheduleTick() {
+  tick = setTimeout(() => {
+    emitNow();
+    scheduleTick();
+  }, 60_000 - (Date.now() % 60_000) + 20);
+}
+// Timers sleep in background tabs: catch up as soon as the tab is visible again.
+function onVisible() {
+  if (document.visibilityState === "visible") emitNow();
+}
 
 function subscribeNow(cb: () => void) {
   listeners.add(cb);
   if (!tick) {
     nowValue = Date.now();
-    tick = setInterval(() => {
-      nowValue = Date.now();
-      listeners.forEach((l) => l());
-    }, 1000);
+    scheduleTick();
+    document.addEventListener("visibilitychange", onVisible);
   }
   return () => {
     listeners.delete(cb);
     if (listeners.size === 0 && tick) {
-      clearInterval(tick);
+      clearTimeout(tick);
       tick = null;
+      document.removeEventListener("visibilitychange", onVisible);
     }
   };
 }
 
-/** Current time, ticking every second. 0 during SSR so markup never depends on the server clock. */
+/** Current time, updated on each minute. 0 during SSR so markup never depends on the server clock. */
 export function useNow(): number {
   return useSyncExternalStore(
     subscribeNow,
@@ -48,6 +63,12 @@ export function formatBA(ms: number, opts: Intl.DateTimeFormatOptions, locale = 
 }
 
 /** "14:32" in Buenos Aires (GMT−3). */
+/** Buenos Aires "HH:MM" as its own tiny component, so a ticking clock never re-renders its parent. */
+export function ClockText({ className, label }: { className?: string; label?: string }) {
+  const { time } = useClockBA();
+  return createElement("span", { className, suppressHydrationWarning: true, "aria-label": label ? `${label} ${time}` : undefined }, time);
+}
+
 export function useClockBA() {
   const now = useNow();
   if (!now) return { time: "··:··", date: "", now };
@@ -176,10 +197,6 @@ export function useKeys(...keys: string[]) {
 }
 
 /* ---------- Environment ---------- */
-
-export function usePrefersReducedMotion() {
-  return useMediaQuery("(prefers-reduced-motion: reduce)");
-}
 
 export async function copyText(text: string) {
   try {

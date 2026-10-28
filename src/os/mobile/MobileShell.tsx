@@ -7,10 +7,8 @@ import { AppContent } from "../apps/AppContent";
 import { AppIcon, appIconProps } from "../AppIcon";
 import { winName, winTitle, type SingletonApp } from "../apps";
 import { GitHubWidget, ModeWidget, WeatherWidget } from "../desktop/Widgets";
-import { Pasarela } from "../desktop/Pasarela";
 import { Wallpaper } from "../desktop/Wallpaper";
-import { KineticText } from "../desktop/KineticText";
-import { useClockBA } from "../hooks";
+import { ClockText } from "../hooks";
 import { Icon } from "../icons";
 import { useLocale, useT } from "../i18n";
 import { useOS, useOSStore, type Win } from "../store";
@@ -22,11 +20,8 @@ const DOCK: SingletonApp[] = ["projects", "about", "lab", "contact"];
 export function MobileShell({ className = "" }: { className?: string }) {
   const store = useOSStore();
   const t = useT();
-  const locale = useLocale();
-  const { time } = useClockBA();
   const windows = useOS((s) => s.windows);
   const focused = useOS((s) => s.focused);
-  const phase = useOS((s) => s.phase);
   const top = windows.find((w) => w.key === focused && !w.minimized);
 
   const open = (app: SingletonApp) => store.getState().openWindow(app);
@@ -37,15 +32,21 @@ export function MobileShell({ className = "" }: { className?: string }) {
       <div className="scroll-area absolute inset-0 pb-[176px]">
         {/* Status bar */}
         <div className="sticky top-0 z-10 flex h-11 items-center justify-between px-6 pt-[env(safe-area-inset-top)] text-[14px] font-semibold">
-          <span className="t-dot text-[15px]" suppressHydrationWarning>
-            {time}
-          </span>
-          <span className="flex items-center gap-2 font-mono text-[12px] font-normal text-text-2">
+          <ClockText className="t-dot text-[15px]" />
+          <span className="flex items-center gap-3 font-mono text-[12px] font-normal text-text-2">
             ◐ {identity.systemName}
+            <button
+              type="button"
+              aria-label={t(ui.apps.prefs)}
+              onClick={() => open("prefs")}
+              className="-mr-2 grid h-9 w-9 place-items-center text-text"
+            >
+              <Icon name="sliders" size={19} />
+            </button>
           </span>
         </div>
 
-        <div className="flex flex-col gap-5 px-5 pt-3">
+        <div className="mobile-home flex flex-col gap-5 px-5 pt-3">
           <section aria-label={t(ui.desktop.hero)}>
             <p className="t-label text-text-2">{t(identity.focus)}</p>
             <h1 className="mt-2 text-[44px] leading-[0.98] font-semibold tracking-[-0.05em]">
@@ -53,7 +54,7 @@ export function MobileShell({ className = "" }: { className?: string }) {
               <span aria-hidden="true" className="ml-[0.04em] inline-block h-[0.2em] w-[0.2em] bg-accent" />
             </h1>
             <p className="mt-3 text-[20px] leading-[1.2] font-medium tracking-[-0.01em]">
-              <KineticText key={locale} text={t(identity.headline)} start={phase === "desktop"} />
+              {t(identity.headline)}
             </p>
             <p className="mt-2 text-[15px] leading-[1.5] text-text-2">{t(identity.subhead)}</p>
           </section>
@@ -64,9 +65,7 @@ export function MobileShell({ className = "" }: { className?: string }) {
               <span className="t-label text-text-2">
                 {identity.city} · {identity.utcLabel}
               </span>
-              <span className="t-dot block text-[48px] leading-none" suppressHydrationWarning>
-                {time}
-              </span>
+              <ClockText className="t-dot block text-[48px] leading-none" />
             </span>
             <span className="max-w-[48%] text-right text-[13px] leading-snug">
               <span className="mb-1 inline-flex items-center gap-1.5 font-medium">
@@ -97,11 +96,6 @@ export function MobileShell({ className = "" }: { className?: string }) {
               );
             })}
           </nav>
-
-          {/* widget · pasarela 3D: un objeto a la vez, swipe */}
-          <div className="card h-[220px] overflow-hidden">
-            <Pasarela mode="single" className="h-full" />
-          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <WeatherWidget />
@@ -169,7 +163,7 @@ function Sheet({ win }: { win: Win }) {
           </button>
         </div>
       </header>
-      <div className="relative min-h-0 flex-1">
+      <div className="sheet-body relative min-h-0 flex-1">
         <AppContent win={win} />
       </div>
     </motion.section>

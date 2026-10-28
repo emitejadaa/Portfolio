@@ -110,8 +110,8 @@ export function ContactApp() {
           {status === "sent" ? (
             <motion.div
               key="sent"
-              initial={{ opacity: 0, y: 10, filter: "blur(6px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
               className="card flex items-start gap-3 p-5"
               role="status"
             >

@@ -81,6 +81,7 @@ function buildItems(
     { app: "terminal", icon: "term", hint: "`" },
     { app: "contact", icon: "mail", hint: t(ui.spotlight.kind.window) },
     { app: "readme", icon: "doc", hint: t(ui.spotlight.kind.window) },
+    { app: "prefs", icon: "sliders", hint: t(ui.spotlight.kind.window) },
   ];
   for (const a of apps) {
     items.push({
@@ -89,7 +90,9 @@ function buildItems(
       title: t(ui.apps[a.app]),
       icon: a.icon,
       hint: a.hint,
-      haystack: normalize(`${ui.apps[a.app].es} ${ui.apps[a.app].en} ${a.app} app`),
+      haystack: normalize(
+        `${ui.apps[a.app].es} ${ui.apps[a.app].en} ${a.app} app${a.app === "prefs" ? " preferencias accesibilidad contraste movimiento transparencia texto" : ""}`,
+      ),
       path: { projects: "/proyectos", about: "/sobre-mi", lab: "/lab", contact: "/contacto" }[a.app as string],
       run: () => s().openWindow(a.app),
     });
@@ -248,8 +251,8 @@ export function Spotlight() {
             role="dialog"
             aria-modal="true"
             aria-label="Spotlight"
-            initial={{ opacity: 0, y: -12, scale: 0.98, filter: "blur(8px)" }}
-            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+            initial={{ opacity: 0, y: -12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98, transition: { duration: 0.16, ease: [0.4, 0, 1, 1] } }}
             transition={{ type: "spring", bounce: 0.2, duration: 0.36 }}
             className={`popover absolute overflow-hidden ${

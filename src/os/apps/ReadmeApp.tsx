@@ -1,12 +1,10 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { useContext } from "react";
 import { ui } from "@/content/ui";
-import type { Readme } from "@/lib/readme";
 import { Icon } from "../icons";
 import { useT } from "../i18n";
-
-export const ReadmeContext = createContext<Readme>(null);
+import { ReadmeContext } from "../readme-context";
 
 /** README.md del escritorio: el README de perfil de GitHub, leído en build. */
 export function ReadmeApp() {

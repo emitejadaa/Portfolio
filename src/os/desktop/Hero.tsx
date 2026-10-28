@@ -6,9 +6,8 @@ import { ui } from "@/content/ui";
 import { useKeys } from "../hooks";
 import { useT } from "../i18n";
 import { useOS, useOSStore } from "../store";
-import { KineticText } from "./KineticText";
 
-/** Escritorio, estado base: nombre, frase cinética y bajada sobre el wallpaper. */
+/** Escritorio, estado base: nombre, frase y bajada sobre el wallpaper. */
 export function Hero() {
   const store = useOSStore();
   const t = useT();
@@ -17,8 +16,8 @@ export function Hero() {
   const spotlightKeys = useKeys("mod", "K");
 
   const enter = (i: number) => ({
-    initial: { opacity: 0, y: 16, filter: "blur(8px)" },
-    animate: ready ? { opacity: 1, y: 0, filter: "blur(0px)" } : undefined,
+    initial: { opacity: 0, y: 12 },
+    animate: ready ? { opacity: 1, y: 0 } : undefined,
     transition: { duration: 0.6, delay: 0.08 + i * 0.06, ease: [0.16, 1, 0.3, 1] as const },
   });
 
@@ -35,8 +34,8 @@ export function Hero() {
         {identity.name}
         <span aria-hidden="true" className="ml-[0.04em] inline-block h-[0.2em] w-[0.2em] bg-accent align-baseline" />
       </motion.h1>
-      <motion.p {...enter(2)} className="t-h2 pointer-events-auto mt-6 max-w-[34ch]">
-        <KineticText key={t(identity.headline)} text={t(identity.headline)} start={ready} />
+      <motion.p {...enter(2)} className="t-h2 mt-6 max-w-[34ch]">
+        {t(identity.headline)}
       </motion.p>
       <motion.p {...enter(3)} className="mt-4 max-w-[52ch] text-[17px] leading-[1.55] text-text-2">
         {t(identity.subhead)}

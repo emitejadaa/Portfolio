@@ -4,8 +4,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { identity } from "@/content/profile";
 import { ui } from "@/content/ui";
-import { Wallpaper } from "./desktop/Wallpaper";
-import { usePrefersReducedMotion, useClockBA } from "./hooks";
+import { useClockBA } from "./hooks";
+import { useReducedMotion } from "./prefs";
 import { useT } from "./i18n";
 import { useOS, useOSStore } from "./store";
 
@@ -15,7 +15,7 @@ export function BootScreen() {
   const phase = useOS((s) => s.phase);
   const hydrated = useOS((s) => s.hydrated);
   const t = useT();
-  const reduced = usePrefersReducedMotion();
+  const reduced = useReducedMotion();
   // Before hydration the first-visit flag lives on <html> (CSS decides); after, the phase does.
   const ssrPlaceholder = !hydrated && phase === "lock";
 
@@ -42,7 +42,7 @@ export function BootScreen() {
           key="boot"
           data-ssr={ssrPlaceholder ? "1" : undefined}
           className="boot-screen fixed inset-0 z-[300] grid place-items-center bg-bg"
-          exit={{ opacity: 0, filter: "blur(8px)", transition: { duration: 0.4 } }}
+          exit={{ opacity: 0, transition: { duration: 0.4 } }}
           aria-live="polite"
         >
           <div className="flex w-[220px] flex-col items-center gap-6">
@@ -69,7 +69,6 @@ export function LockScreen() {
   const store = useOSStore();
   const phase = useOS((s) => s.phase);
   const t = useT();
-  const { time, date } = useClockBA();
   const show = phase === "lock";
 
   useEffect(() => {
@@ -91,22 +90,12 @@ export function LockScreen() {
           key="lock"
           className="lock-screen fixed inset-0 z-[250] flex cursor-pointer flex-col items-center justify-between overflow-hidden px-6 py-[12vh] text-text"
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, y: -40, filter: "blur(10px)", transition: { duration: 0.48, ease: [0.16, 1, 0.3, 1] } }}
+          exit={{ opacity: 0, y: -40, transition: { duration: 0.48, ease: [0.16, 1, 0.3, 1] } }}
           onClick={() => store.getState().setPhase("desktop")}
           onWheel={(e) => e.deltaY > 20 && store.getState().setPhase("desktop")}
         >
           <div className="lock-veil absolute inset-0" aria-hidden="true" />
-          <div className="relative flex flex-col items-center">
-            <span className="font-mono text-[13px] text-text-2 capitalize" suppressHydrationWarning>
-              {date || " "}
-            </span>
-            <span className="t-dot mt-2 text-[clamp(88px,15vw,168px)] leading-none" suppressHydrationWarning>
-              {time}
-            </span>
-            <span className="t-label mt-3 text-text-2">
-              {identity.city} · {identity.utcLabel}
-            </span>
-          </div>
+          <LockClock />
           <div className="relative flex flex-col items-center gap-4">
             <span className="grid h-16 w-16 place-items-center rounded-full border border-line-strong font-mono text-[18px] font-semibold daylight:rounded-none daylight:border-[var(--tinta)] daylight:bg-[var(--blanco-roto)] daylight:shadow-[4px_4px_0_var(--tinta)]">
               {identity.monogram}
@@ -131,11 +120,10 @@ export function LockScreen() {
   );
 }
 
-/** X·03 easter egg 04: 60 s sin actividad → protector de pantalla con el shader. */
+/** X·03 easter egg 04: 60 s sin actividad → protector de pantalla (cielo que se mueve despacio + hora). */
 export function Screensaver() {
   const store = useOSStore();
   const on = useOS((s) => s.screensaver);
-  const { time } = useClockBA();
 
   useEffect(() => {
     if (!on) return;
@@ -160,18 +148,15 @@ export function Screensaver() {
       {on ? (
         <motion.div
           key="saver"
-          className="fixed inset-0 z-[280] bg-bg"
+          className="fixed inset-0 z-[280] overflow-hidden bg-bg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.24 } }}
           transition={{ duration: 1.2 }}
           aria-hidden="true"
         >
-          <Wallpaper variant="screensaver" />
-          <div className="absolute bottom-10 left-10 flex flex-col">
-            <span className="t-dot text-[72px] leading-none text-text/90">{time}</span>
-            <span className="mt-2 font-mono text-[12px] text-text-2">◐ {identity.systemName}</span>
-          </div>
+          <div className="screensaver-sky" />
+          <SaverClock />
         </motion.div>
       ) : null}
     </AnimatePresence>
@@ -289,8 +274,8 @@ export function Toast() {
         {toast ? (
           <motion.div
             key={toast.id}
-            initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8, transition: { duration: 0.16 } }}
             transition={{ type: "spring", bounce: 0.2, duration: 0.36 }}
             className="popover rounded-full px-4 py-2 font-mono text-[12.5px] daylight:rounded-none"
@@ -299,6 +284,33 @@ export function Toast() {
           </motion.div>
         ) : null}
       </AnimatePresence>
+    </div>
+  );
+}
+
+function LockClock() {
+  const { time, date } = useClockBA();
+  return (
+    <div className="relative flex flex-col items-center">
+      <span className="font-mono text-[13px] text-text-2 capitalize" suppressHydrationWarning>
+        {date || " "}
+      </span>
+      <span className="t-dot mt-2 text-[clamp(88px,15vw,168px)] leading-none" suppressHydrationWarning>
+        {time}
+      </span>
+      <span className="t-label mt-3 text-text-2">
+        {identity.city} · {identity.utcLabel}
+      </span>
+    </div>
+  );
+}
+
+function SaverClock() {
+  const { time } = useClockBA();
+  return (
+    <div className="absolute bottom-10 left-10 flex flex-col">
+      <span className="t-dot text-[72px] leading-none text-text/90">{time}</span>
+      <span className="mt-2 font-mono text-[12px] text-text-2">◐ {identity.systemName}</span>
     </div>
   );
 }

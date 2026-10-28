@@ -2,7 +2,7 @@ import { getProject, windowProjects } from "@/content/projects";
 import type { L } from "@/content/types";
 import { ui } from "@/content/ui";
 
-export type AppId = "projects" | "project" | "about" | "lab" | "terminal" | "contact" | "readme";
+export type AppId = "projects" | "project" | "about" | "lab" | "terminal" | "contact" | "readme" | "prefs";
 export type SingletonApp = Exclude<AppId, "project">;
 export type WinKey = SingletonApp | `project:${string}`;
 
@@ -23,7 +23,8 @@ export type IconName =
   | "link"
   | "copy"
   | "globe"
-  | "arrow";
+  | "arrow"
+  | "sliders";
 
 type AppMeta = {
   name: L;
@@ -43,6 +44,7 @@ export const apps: Record<SingletonApp, AppMeta> = {
   terminal: { name: ui.apps.terminal, file: "terminal — visitante@tejada.os", icon: "term", size: [760, 460], minSize: [420, 260] },
   contact: { name: ui.apps.contact, file: "contacto.app", icon: "mail", path: "/contacto", size: [620, 640], minSize: [420, 420] },
   readme: { name: ui.apps.readme, file: "README.md", icon: "doc", size: [720, 640], minSize: [420, 320] },
+  prefs: { name: ui.apps.prefs, file: "ajustes.app", icon: "sliders", size: [480, 640], minSize: [380, 360] },
 };
 
 export const projectSize = (slug: string): [number, number] =>

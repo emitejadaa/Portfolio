@@ -2,6 +2,7 @@
 
 import { flushSync } from "react-dom";
 import type { StoreApi } from "zustand";
+import { isReducedMotion } from "./prefs";
 import type { OSState, Theme } from "./store";
 
 type ViewTransitionDoc = Document & { startViewTransition?: (cb: () => void) => unknown };
@@ -13,8 +14,7 @@ export function switchTheme(store: StoreApi<OSState>, next?: Theme, origin?: { x
   if (target === state.theme) return;
   const apply = () => state.setTheme(target);
   const doc = document as ViewTransitionDoc;
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (!doc.startViewTransition || reduced) {
+  if (!doc.startViewTransition || isReducedMotion()) {
     apply();
     return;
   }

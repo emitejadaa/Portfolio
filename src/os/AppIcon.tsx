@@ -37,4 +37,5 @@ export const appIconProps: Record<string, { icon: IconName; accent?: boolean; in
   terminal: { icon: "term", invert: true },
   contact: { icon: "mail" },
   readme: { icon: "doc" },
+  prefs: { icon: "sliders" },
 };

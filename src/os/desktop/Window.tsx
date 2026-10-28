@@ -4,7 +4,8 @@ import { animate, motion, useDragControls, useMotionValue, type PanInfo } from "
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { ui } from "@/content/ui";
 import { winTitle } from "../apps";
-import { centerOf, launchCenter, usePrefersReducedMotion } from "../hooks";
+import { centerOf, launchCenter } from "../hooks";
+import { useReducedMotion } from "../prefs";
 import { useT } from "../i18n";
 import { DOCK_H, MENU_H, placeWindow, useOS, useOSStore, type Rect, type Win } from "../store";
 
@@ -23,7 +24,7 @@ export function Window({ win, children, constraintsRef, dockId }: Props) {
   const store = useOSStore();
   const focused = useOS((s) => s.focused === win.key);
   const t = useT();
-  const reduced = usePrefersReducedMotion();
+  const reduced = useReducedMotion();
   const titleId = useId();
   const controls = useDragControls();
   const ref = useRef<HTMLElement>(null);
@@ -147,13 +148,13 @@ export function Window({ win, children, constraintsRef, dockId }: Props) {
       dragConstraints={constraintsRef}
       onDragEnd={onDragEnd}
       onPointerDownCapture={() => store.getState().focusWindow(win.key)}
-      initial={reduced ? { opacity: 0 } : { opacity: 0, scale: win.origin ? 0.3 : 0.94, filter: "blur(10px)" }}
+      initial={reduced ? { opacity: 0 } : { opacity: 0, scale: win.origin ? 0.3 : 0.94 }}
       animate={
         hidden
-          ? { opacity: 0, scale: 0.08, filter: "blur(6px)", transition: reduced ? { duration: 0.12 } : { duration: 0.42, ease: [0.16, 1, 0.3, 1] } }
-          : { opacity: 1, scale: 1, filter: "blur(0px)", transition: reduced ? { duration: 0.12 } : SPRING }
+          ? { opacity: 0, scale: 0.08, transition: reduced ? { duration: 0.12 } : { duration: 0.42, ease: [0.16, 1, 0.3, 1] } }
+          : { opacity: 1, scale: 1, transition: reduced ? { duration: 0.12 } : SPRING }
       }
-      exit={reduced ? { opacity: 0, transition: { duration: 0.12 } } : { opacity: 0, scale: 0.95, filter: "blur(6px)", transition: EXIT }}
+      exit={reduced ? { opacity: 0, transition: { duration: 0.12 } } : { opacity: 0, scale: 0.95, transition: EXIT }}
       onAnimationComplete={() => {
         if (!hidden && origin !== "50% 50%") setOrigin("50% 50%");
       }}

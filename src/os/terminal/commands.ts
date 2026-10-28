@@ -98,6 +98,10 @@ const APP_ALIASES: Record<string, SingletonApp> = {
   contact: "contact",
   readme: "readme",
   "readme.md": "readme",
+  ajustes: "prefs",
+  settings: "prefs",
+  preferencias: "prefs",
+  prefs: "prefs",
 };
 
 function openTarget(target: string, ctx: Ctx): boolean {

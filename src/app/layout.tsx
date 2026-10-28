@@ -8,7 +8,7 @@ import { OSRoot } from "@/os/OSRoot";
 
 const geist = Geist({ variable: "--font-geist", subsets: ["latin", "latin-ext"], display: "swap" });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "latin-ext"], display: "swap" });
-const doto = Doto({ variable: "--font-doto", subsets: ["latin"], weight: ["600", "800"], display: "swap" });
+const doto = Doto({ variable: "--font-doto", subsets: ["latin"], weight: "600", display: "swap" });
 
 const description =
   "Portfolio de Emiliano Tejada: un escritorio que se usa como un sistema operativo. Proyectos de hardware, backend e inteligencia artificial.";
@@ -41,8 +41,11 @@ export const viewport: Viewport = {
   ],
 };
 
-/** Runs before paint: mode (?theme → saved → prefers-color-scheme), language and first visit. */
-const bootScript = `(function(){try{var d=document.documentElement,q=new URLSearchParams(location.search),t=q.get('theme');if(t!=='daylight'&&t!=='midnight'){t=localStorage.getItem('tejada.theme')}if(t!=='daylight'&&t!=='midnight'){t=matchMedia('(prefers-color-scheme: light)').matches?'daylight':'midnight'}d.dataset.theme=t;var l=localStorage.getItem('tejada.lang');if(l!=='es'&&l!=='en'){l=(navigator.language||'es').toLowerCase().indexOf('en')===0?'en':'es'}d.lang=l;d.dataset.lang=l;if(!localStorage.getItem('tejada.visited')){d.dataset.first='1'}}catch(e){}})();`;
+/**
+ * Runs before paint: mode (?theme → saved → prefers-color-scheme), language, first visit and Ajustes
+ * (src/os/prefs.ts). Very low-end devices start with solid surfaces until the visitor says otherwise.
+ */
+const bootScript = `(function(){try{var d=document.documentElement,q=new URLSearchParams(location.search),t=q.get('theme');if(t!=='daylight'&&t!=='midnight'){t=localStorage.getItem('tejada.theme')}if(t!=='daylight'&&t!=='midnight'){t=matchMedia('(prefers-color-scheme: light)').matches?'daylight':'midnight'}d.dataset.theme=t;var l=localStorage.getItem('tejada.lang');if(l!=='es'&&l!=='en'){l=(navigator.language||'es').toLowerCase().indexOf('en')===0?'en':'es'}d.lang=l;d.dataset.lang=l;if(!localStorage.getItem('tejada.visited')){d.dataset.first='1'}var p={};try{p=JSON.parse(localStorage.getItem('tejada.prefs')||'{}')||{}}catch(e){}if(p.motion==='reduce'||p.motion==='full'){d.dataset.motion=p.motion}var n=navigator;if(p.solid===true||(p.solid===undefined&&((n.deviceMemory&&n.deviceMemory<=2)||(n.hardwareConcurrency&&n.hardwareConcurrency<=2)))){d.dataset.solid='1'}if(p.contrast){d.dataset.contrast='more'}if(p.largeText){d.dataset.text='large'}if(p.cursor===false){d.dataset.cursor='off'}}catch(e){}})();`;
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const readme = await getReadme();

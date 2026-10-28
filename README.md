@@ -11,9 +11,21 @@ Un escritorio que se usa como un sistema operativo: ventanas, dock, Spotlight, t
 
 El cambio de modo solo toca colores y materiales; tipografía, layout y movimiento quedan iguales. En celular el escritorio pasa a una pantalla de inicio con hojas deslizables.
 
+## Ajustes
+
+Desde la barra de menú (o `open ajustes` en la terminal): modo, idioma y accesibilidad (reducir movimiento, reducir transparencia, más contraste, texto más grande y halo del cursor). Se guardan en el navegador y se aplican antes del primer pintado (`src/os/prefs.ts`).
+
+## Rendimiento
+
+- Fondo en CSS estático: sin canvas, sin seguir al mouse, se pinta una vez.
+- El vidrio (`backdrop-filter`) solo en ventanas, dock, barra de menú y menús; las tarjetas usan un relleno sólido.
+- Cada app es su propio chunk y se precarga cuando el navegador está libre.
+- El reloj se actualiza una vez por minuto y solo re-renderiza su propio texto.
+- Equipos muy limitados arrancan con superficies sólidas.
+
 ## Stack
 
-Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Motion · three.js · Zustand · Resend · Vercel
+Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS 4 · Motion · Zustand · Resend · Vercel
 
 ## Estructura
 
