@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from "motion/react";
+import { animate, AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { ui } from "@/content/ui";
 import { AppIcon, appIconProps } from "../AppIcon";
@@ -90,6 +90,9 @@ function DockItem({
   const t = useT();
   const ref = useRef<HTMLButtonElement>(null);
   const size = useMagnify(mouseX, ref);
+  const reduced = useReducedMotion();
+  // Launching an app that is not running yet makes its icon hop, like on a real dock.
+  const hop = useMotionValue(0);
   const [hover, setHover] = useState(false);
   const label = t(ui.apps[app]);
 
@@ -103,6 +106,13 @@ function DockItem({
 
   const onClick = () => {
     registerLaunchRect(app, ref.current);
+    if (!running && !reduced) {
+      animate(hop, [0, -20, 0, -8, 0], {
+        duration: 0.75,
+        times: [0, 0.3, 0.55, 0.78, 1],
+        ease: ["easeOut", "easeIn", "easeOut", "easeIn"],
+      });
+    }
     const s = store.getState();
     const r = ref.current?.getBoundingClientRect();
     const origin = r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : undefined;
@@ -123,7 +133,7 @@ function DockItem({
       type="button"
       aria-label={label}
       className="relative flex flex-col items-center outline-none"
-      style={{ width: size, height: size }}
+      style={{ width: size, height: size, y: hop }}
       onClick={onClick}
       onPointerEnter={() => setHover(true)}
       onPointerLeave={() => setHover(false)}
@@ -181,11 +191,19 @@ function DockMinimized({ win, mouseX }: { win: Win; mouseX: MotionValue<number> 
       <span className="pointer-events-none absolute inset-x-1 bottom-1.5 truncate text-center font-mono text-[9px] text-text-2 daylight:text-[var(--tinta)]">
         {name}
       </span>
-      {hover ? (
-        <span className="dock-tooltip pointer-events-none absolute -top-11 left-1/2 -translate-x-1/2 rounded-lg px-3 py-1.5 text-[13px] whitespace-nowrap">
-          {name}
-        </span>
-      ) : null}
+      <AnimatePresence>
+        {hover ? (
+          <motion.span
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4, transition: { duration: 0.12 } }}
+            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+            className="dock-tooltip pointer-events-none absolute -top-11 left-1/2 -translate-x-1/2 rounded-lg px-3 py-1.5 text-[13px] whitespace-nowrap"
+          >
+            {name}
+          </motion.span>
+        ) : null}
+      </AnimatePresence>
     </motion.button>
   );
 }

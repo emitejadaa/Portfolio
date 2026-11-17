@@ -155,7 +155,7 @@ function SunToggle() {
           }
         }}
       >
-        <Icon name="moon" size={17} className={theme === "daylight" ? "rotate-180" : ""} />
+        <Icon name="moon" size={17} className={`keep-transition transition-transform duration-500 ease-[var(--ease-expo)] ${theme === "daylight" ? "rotate-180" : ""}`} />
       </button>
       {sun ? (
         <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[200]">

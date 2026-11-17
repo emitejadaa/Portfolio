@@ -29,7 +29,7 @@ function Widget({
       type={onClick ? "button" : undefined}
       onClick={onClick}
       aria-label={ariaLabel}
-      className={`card @container ${onClick ? "card-hover cursor-pointer" : ""} flex w-full flex-col p-3.5 text-left ${className}`}
+      className={`card @container ${onClick ? "card-hover cursor-pointer active:scale-[0.97]" : ""} flex w-full flex-col p-3.5 text-left ${className}`}
     >
       <span className="t-label flex items-center gap-1.5 text-text-2">{label}</span>
       {children}
@@ -110,7 +110,7 @@ export function ModeWidget() {
       onClick={() => switchTheme(store)}
       ariaLabel={theme === "midnight" ? t(ui.menu.modeToDaylight) : t(ui.menu.modeToMidnight)}
     >
-      <Icon name="moon" size={26} className={`transition-transform duration-500 ${theme === "daylight" ? "rotate-180" : ""}`} />
+      <Icon name="moon" size={26} className={`keep-transition transition-transform duration-500 ease-[var(--ease-expo)] ${theme === "daylight" ? "rotate-180" : ""}`} />
       <span className="flex flex-col font-mono text-[12px] leading-[1.35]">
         <span className={theme === "midnight" ? "text-text" : "text-text-2 opacity-70"}>{theme === "midnight" ? "● " : "  "}Midnight</span>
         <span className={theme === "daylight" ? "text-text" : "text-text-2 opacity-70"}>{theme === "daylight" ? "● " : "  "}Daylight</span>

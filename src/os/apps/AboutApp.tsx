@@ -20,7 +20,7 @@ export function AboutApp({ view: initial }: { view?: string }) {
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={view}
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: view === "bento" ? 0 : 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, transition: { duration: 0.12 } }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
@@ -50,19 +50,23 @@ function Cell({
   className = "",
   onClick,
   action,
+  i,
 }: {
   label: string;
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
   action?: string;
+  /** Position in the entrance stagger (each step waits 55 ms more). */
+  i: number;
 }) {
   const Tag = onClick ? "button" : "div";
   return (
     <Tag
       type={onClick ? "button" : undefined}
       onClick={onClick}
-      className={`card ${onClick ? "card-hover cursor-pointer" : ""} flex min-h-0 flex-col gap-3 p-4 text-left ${className}`}
+      style={{ ["--i" as string]: i }}
+      className={`card rise ${onClick ? "card-hover cursor-pointer active:scale-[0.985]" : ""} flex min-h-0 flex-col gap-3 p-4 text-left ${className}`}
     >
       <span className="t-label flex items-center justify-between text-text-2">
         {label}
@@ -84,7 +88,7 @@ function Bento({ onOpen }: { onOpen: (v: View) => void }) {
   // behind the same query as `grid-cols-12`: a span inside a 1-column grid makes implicit columns.
   return (
     <div className="grid grid-cols-1 gap-3 @[720px]:grid-cols-12">
-      <Cell label={t(ui.about.photo)} className="min-h-[220px] justify-between @[720px]:col-span-4 @[720px]:row-span-2 @[720px]:min-h-[300px]">
+      <Cell i={0} label={t(ui.about.photo)} className="min-h-[220px] justify-between @[720px]:col-span-4 @[720px]:row-span-2 @[720px]:min-h-[300px]">
         <div className="relative flex flex-1 items-center justify-center overflow-hidden rounded-[10px]">
           <div className="halftone absolute inset-0 opacity-[0.07] daylight:opacity-25" style={{ ["--dot" as string]: "2px" }} />
           <div className="relative grid h-36 w-36 place-items-center rounded-full border border-line-strong bg-[radial-gradient(circle_at_30%_30%,rgb(139_92_255/.45),rgb(59_59_255/.15)_60%,transparent)] daylight:rounded-none daylight:border-[var(--tinta)] daylight:bg-[var(--klein)] daylight:shadow-[6px_6px_0_var(--tinta)]">
@@ -97,11 +101,11 @@ function Bento({ onOpen }: { onOpen: (v: View) => void }) {
         </span>
       </Cell>
 
-      <Cell label={t(ui.about.bio)} className="@[720px]:col-span-8" onClick={() => onOpen("bio")} action={t(ui.about.readMore)}>
+      <Cell i={1} label={t(ui.about.bio)} className="@[720px]:col-span-8" onClick={() => onOpen("bio")} action={t(ui.about.readMore)}>
         <p className="text-[17px] leading-[1.5]">{about.bioShort[locale]}</p>
       </Cell>
 
-      <Cell label={t(ui.about.stack)} className="@[720px]:col-span-4" onClick={() => onOpen("stack")} action={t(ui.about.seeAll)}>
+      <Cell i={2} label={t(ui.about.stack)} className="@[720px]:col-span-4" onClick={() => onOpen("stack")} action={t(ui.about.seeAll)}>
         <div className="flex flex-wrap gap-1.5">
           {topStack.map((s) => (
             <span key={s} className="chip h-6 px-2 text-[11.5px]" title={s}>
@@ -111,7 +115,7 @@ function Bento({ onOpen }: { onOpen: (v: View) => void }) {
         </div>
       </Cell>
 
-      <Cell label={t(ui.about.now)} className="@[720px]:col-span-4">
+      <Cell i={3} label={t(ui.about.now)} className="@[720px]:col-span-4">
         <ul className="flex flex-col gap-1.5 text-[14px]">
           {about.now.map((n, i) => (
             <li key={i} className={i === 0 ? "" : "text-text-2"}>
@@ -125,11 +129,11 @@ function Bento({ onOpen }: { onOpen: (v: View) => void }) {
         </div>
       </Cell>
 
-      <Cell label={t(ui.about.timeline)} className="@[720px]:col-span-8" onClick={() => onOpen("timeline")} action={t(ui.about.seeAll)}>
+      <Cell i={4} label={t(ui.about.timeline)} className="@[720px]:col-span-8" onClick={() => onOpen("timeline")} action={t(ui.about.seeAll)}>
         <MiniTimeline />
       </Cell>
 
-      <Cell label={t(ui.about.contact)} className="@[720px]:col-span-4">
+      <Cell i={5} label={t(ui.about.contact)} className="@[720px]:col-span-4">
         <div className="flex flex-col gap-2 text-[14px]">
           <a href={`mailto:${contact.email}`} className="link w-max max-w-full truncate" onClick={(e) => e.stopPropagation()}>
             {contact.email}
