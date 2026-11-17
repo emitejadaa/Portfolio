@@ -39,7 +39,7 @@ export function MobileShell({ className = "" }: { className?: string }) {
               type="button"
               aria-label={t(ui.apps.prefs)}
               onClick={() => open("prefs")}
-              className="-mr-2 grid h-9 w-9 place-items-center text-text"
+              className="-mr-2 grid h-9 w-9 place-items-center text-text transition-transform duration-150 active:scale-90"
             >
               <Icon name="sliders" size={19} />
             </button>
@@ -60,7 +60,7 @@ export function MobileShell({ className = "" }: { className?: string }) {
           </section>
 
           {/* widget · hora + estado */}
-          <button type="button" className="card flex items-center justify-between gap-4 p-4 text-left" onClick={() => open("contact")}>
+          <button type="button" className="card flex items-center justify-between gap-4 p-4 text-left active:scale-[0.98]" onClick={() => open("contact")}>
             <span>
               <span className="t-label text-text-2">
                 {identity.city} · {identity.utcLabel}
@@ -82,14 +82,14 @@ export function MobileShell({ className = "" }: { className?: string }) {
               if (item === "github" || item === "linkedin") {
                 const href = item === "github" ? contact.github.url : contact.linkedin.url;
                 return (
-                  <a key={item} href={href} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5">
+                  <a key={item} href={href} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5 transition-transform duration-150 active:scale-90">
                     <AppIcon icon={item} size={60} />
                     <span className="text-[12px]">{item === "github" ? "GitHub" : "LinkedIn"}</span>
                   </a>
                 );
               }
               return (
-                <button key={item} type="button" onClick={() => open(item)} className="flex flex-col items-center gap-1.5">
+                <button key={item} type="button" onClick={() => open(item)} className="flex flex-col items-center gap-1.5 transition-transform duration-150 active:scale-90">
                   <AppIcon {...appIconProps[item]!} size={60} />
                   <span className="text-[12px]">{t(ui.apps[item])}</span>
                 </button>
@@ -110,13 +110,13 @@ export function MobileShell({ className = "" }: { className?: string }) {
         <button
           type="button"
           onClick={() => store.getState().openSpotlight()}
-          className="popover pointer-events-auto flex h-8 items-center gap-1.5 rounded-full px-4 text-[13px] daylight:rounded-none"
+          className="popover pointer-events-auto flex h-8 items-center gap-1.5 rounded-full px-4 text-[13px] transition-transform duration-150 active:scale-95 daylight:rounded-none"
         >
           <Icon name="search" size={14} /> {t(ui.mobile.search)}
         </button>
         <nav aria-label="Dock" className="dock-shell pointer-events-auto flex w-full max-w-[420px] justify-around px-3 py-3">
           {DOCK.map((app) => (
-            <button key={app} type="button" aria-label={t(ui.apps[app])} onClick={() => open(app)}>
+            <button key={app} type="button" aria-label={t(ui.apps[app])} onClick={() => open(app)} className="transition-transform duration-150 active:scale-90">
               <AppIcon {...appIconProps[app]!} size={58} />
             </button>
           ))}

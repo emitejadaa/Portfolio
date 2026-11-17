@@ -37,7 +37,7 @@ export function ProjectsApp() {
           <h2 className="t-label text-text-2">{t(ui.projects.featured)}</h2>
           <div className="grid grid-cols-2 gap-4 max-[640px]:grid-cols-1">
             {featured.map((p, i) => (
-              <FeaturedCard key={p.slug} project={p} wide={i === 0} />
+              <FeaturedCard key={p.slug} project={p} wide={i === 0} i={i + 1} />
             ))}
           </div>
         </section>
@@ -45,8 +45,8 @@ export function ProjectsApp() {
         <section className="flex flex-col gap-2">
           <h2 className="t-label text-text-2">{t(ui.projects.projects)}</h2>
           <ul className="flex flex-col">
-            {regular.map((p) => (
-              <ProjectRow key={p.slug} project={p} />
+            {regular.map((p, i) => (
+              <ProjectRow key={p.slug} project={p} i={featured.length + i + 1} />
             ))}
           </ul>
         </section>
@@ -102,7 +102,7 @@ function useProjectActions(project: Project) {
   return { open, onContextMenu };
 }
 
-function FeaturedCard({ project, wide }: { project: Project; wide: boolean }) {
+function FeaturedCard({ project, wide, i }: { project: Project; wide: boolean; i: number }) {
   const locale = useLocale();
   const { open, onContextMenu } = useProjectActions(project);
   const index = windowProjects.findIndex((p) => p.slug === project.slug) + 1;
@@ -112,7 +112,8 @@ function FeaturedCard({ project, wide }: { project: Project; wide: boolean }) {
       type="button"
       onClick={(e) => open(e.currentTarget)}
       onContextMenu={onContextMenu}
-      className={`card card-hover group flex flex-col overflow-hidden text-left ${wide ? "col-span-2 max-[640px]:col-span-1" : ""}`}
+      style={{ ["--i" as string]: i }}
+      className={`card card-hover rise group flex flex-col overflow-hidden text-left active:scale-[0.985] ${wide ? "col-span-2 max-[640px]:col-span-1" : ""}`}
     >
       <span className={`relative block w-full overflow-hidden border-b border-line daylight:border-[var(--tinta)] ${wide ? "aspect-[16/6]" : "aspect-[16/8]"}`}>
         {shot ? (
@@ -143,12 +144,12 @@ function FeaturedCard({ project, wide }: { project: Project; wide: boolean }) {
   );
 }
 
-function ProjectRow({ project }: { project: Project }) {
+function ProjectRow({ project, i }: { project: Project; i: number }) {
   const locale = useLocale();
   const t = useT();
   const { open, onContextMenu } = useProjectActions(project);
   return (
-    <li>
+    <li className="rise" style={{ ["--i" as string]: i }}>
       <button
         type="button"
         onClick={(e) => open(e.currentTarget)}

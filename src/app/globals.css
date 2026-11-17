@@ -32,6 +32,7 @@
 
   --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 :root,
@@ -223,6 +224,7 @@
     transition:
       border-color 240ms var(--ease-expo),
       transform 240ms var(--ease-expo),
+      scale 160ms var(--ease-expo),
       box-shadow 240ms var(--ease-expo);
   }
   [data-theme="daylight"] .card {
@@ -938,20 +940,60 @@
   --font-sans: var(--font-doto), var(--font-geist-mono), monospace;
 }
 
-/* View Transitions: el cambio de modo es un círculo que se expande desde el toggle (400 ms) */
+/* Entrada escalonada: cada elemento sube y aparece con (--i × 55 ms) de retraso. `backwards` y no `both`: al
+   terminar no deja nada aplicado, así que el hover (transform) sigue funcionando. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+.rise {
+  animation: rise 520ms var(--ease-expo) backwards;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+/* Touch: sin el destello gris del navegador; el feedback lo da el press (scale) de cada control. */
+.mobile :is(button, a) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* View Transitions: el cambio de modo es un círculo que se expande desde donde se hizo click (520 ms).
+   La curva arranca suave (10 % del radio a los 100 ms) para que se vea nacer del botón, barre la pantalla
+   en la mitad y frena sin cola larga. Duración en sync con switchTheme (src/os/theme.ts). */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
 ::view-transition-new(root) {
-  clip-path: circle(0 at var(--vt-x, 50%) var(--vt-y, 0%));
-  animation: vt-reveal 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  clip-path: circle(0 at var(--vt-x, 50%) var(--vt-y, 50%));
+  animation: vt-reveal 520ms cubic-bezier(0.45, 0, 0.15, 1) forwards;
 }
 @keyframes vt-reveal {
   to {
-    clip-path: circle(var(--vt-r, 150vmax) at var(--vt-x, 50%) var(--vt-y, 0%));
+    clip-path: circle(var(--vt-r, 150vmax) at var(--vt-x, 50%) var(--vt-y, 50%));
   }
+}
+/* Mientras el círculo se revela, lo que muestra ya es el modo nuevo: sin transiciones de color en curso
+   (cards, botones, ventanas) que lo dejarían a medio fundir. */
+html.theme-vt *:not(.keep-transition),
+html.theme-vt *::before,
+html.theme-vt *::after {
+  transition: none !important;
+}
+/* Sin círculo (navegador sin View Transitions o "reducir movimiento"): fundido de colores en vez de corte. */
+html.theme-fade,
+html.theme-fade *,
+html.theme-fade *::before,
+html.theme-fade *::after {
+  transition:
+    background-color 280ms var(--ease-inout),
+    border-color 280ms var(--ease-inout),
+    color 280ms var(--ease-inout),
+    fill 280ms var(--ease-inout),
+    stroke 280ms var(--ease-inout),
+    box-shadow 280ms var(--ease-inout) !important;
 }
 
 /* ---------- Ajustes (src/os/prefs.ts) ----------
@@ -967,6 +1009,9 @@
     transition-duration: 120ms !important;
     scroll-behavior: auto !important;
   }
+  html:not([data-motion="full"]) .rise {
+    animation-delay: 0ms !important;
+  }
   html:not([data-motion="full"]) .caret {
     animation: none;
   }
@@ -978,6 +1023,9 @@ html[data-motion="reduce"] *::after {
   animation-iteration-count: 1 !important;
   transition-duration: 120ms !important;
   scroll-behavior: auto !important;
+}
+html[data-motion="reduce"] .rise {
+  animation-delay: 0ms !important;
 }
 html[data-motion="reduce"] .caret {
   animation: none;
