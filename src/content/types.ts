@@ -42,8 +42,7 @@ export type Project = {
   media: {
     screenshots: string[];
     mobile?: string;
-    video?: string;
-    /** Draw the system diagram instead of (or next to) screenshots. */
+    /** Drawn only when there is no screenshot of the deploy (e.g. the demo is down). */
     diagram?: "secure-track" | "neurolinked";
   };
   /** Ping the demo for the services widget. False while a deploy is known to be broken. */

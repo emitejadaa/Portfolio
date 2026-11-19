@@ -5,27 +5,10 @@ import type { Project } from "@/content/types";
 import { ui } from "@/content/ui";
 import { useLocale, useT } from "../i18n";
 
-/** The visual itself, absolutely positioned: video, screenshot, diagram or a generated piece. */
-export function ProjectVisual({ project, priority = false, poster = false }: { project: Project; priority?: boolean; poster?: boolean }) {
+/** The visual itself, absolutely positioned: a render of the deploy's home page, or a diagram / generated piece when there is none. */
+export function ProjectVisual({ project, priority = false }: { project: Project; priority?: boolean }) {
   const t = useT();
   const shot = project.media.screenshots[0];
-  if (project.media.video && !poster) {
-    return (
-      <video
-        className="absolute inset-0 h-full w-full object-cover object-top"
-        src={project.media.video}
-        poster={shot}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        aria-label={project.title}
-      />
-    );
-  }
-  if (project.media.diagram === "secure-track") return <SecureTrackDiagram label={t(ui.project.diagram)} />;
-  if (project.media.diagram === "neurolinked") return <NeuroVisual />;
   if (shot) {
     return (
       <Image
@@ -38,11 +21,13 @@ export function ProjectVisual({ project, priority = false, poster = false }: { p
       />
     );
   }
+  if (project.media.diagram === "secure-track") return <SecureTrackDiagram label={t(ui.project.diagram)} />;
+  if (project.media.diagram === "neurolinked") return <NeuroVisual />;
   if (project.slug === "framelab") return <FramelabVisual />;
   return <div className="halftone absolute inset-0 opacity-20" />;
 }
 
-/** Media del proyecto: video en loop, captura, diagrama o una pieza generada cuando no hay capturas. */
+/** Media del proyecto: captura de la página inicial del deploy, o diagrama / pieza generada cuando no hay captura. */
 export function ProjectMedia({ project, index, className = "" }: { project: Project; index: number; className?: string }) {
   const label = `P—${String(index).padStart(2, "0")}`;
   return (

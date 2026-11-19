@@ -124,7 +124,7 @@ function FeaturedCard({ project, wide }: { project: Project; wide: boolean }) {
             className="object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]"
           />
         ) : (
-          <ProjectVisual project={project} poster />
+          <ProjectVisual project={project} />
         )}
         <span className="absolute top-3 left-3 rounded-[6px] bg-black/55 px-2 py-1 font-mono text-[11px] text-white backdrop-blur daylight:rounded-none daylight:border daylight:border-[var(--tinta)] daylight:bg-[var(--blanco-roto)] daylight:text-[var(--tinta)]">
           P—{String(index).padStart(2, "0")}
