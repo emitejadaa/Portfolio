@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
- * Captures project screenshots from the live deploys (doc: "Capturas: salen de los deploys",
- * 1440 × 900 y 390 × 844) and records the game.it tour video.
+ * Captures project previews from the live deploys: a static render of the home page only
+ * (first viewport, no scrolling), 1440 × 900 and 390 × 844 for the mobile ones.
  *
  *   npm run screenshots            # everything
  *   npm run screenshots -- liba    # only some slugs
  *
- * Needs Playwright's Chromium, sharp (ships with Next.js) and ffmpeg for the video.
+ * Needs Playwright's Chromium and sharp (ships with Next.js). A deploy that answers with
+ * an HTTP error is reported and skipped, so a broken page never overwrites a good capture.
  */
 const { chromium } = require("playwright");
 const sharp = require("sharp");
-const { execFileSync } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -27,14 +27,9 @@ const SHOTS = [
   { slug: "game-it", file: "home", url: "https://game-it-63r9.onrender.com" },
   { slug: "liba", file: "home", url: "https://liba-one.vercel.app" },
   { slug: "csbs-dp", file: "home", url: "https://csbs-form.vercel.app" },
+  // NeuroLinked: el deploy da 404; agregarlo cuando vuelva a estar online.
+  // { slug: "neurolinked", file: "home", url: "https://neurolinked.vercel.app" },
 ];
-
-// game.it: un video corto recorriendo 3 o 4 juegos.
-const GAME_TOUR = {
-  base: "https://game-it-63r9.onrender.com",
-  stops: ["", "#play/minigolf", "#play/drift", "#play/connect4", "#play/chess", ""],
-  dwellMs: 2600,
-};
 
 const only = process.argv.slice(2);
 const want = (slug) => only.length === 0 || only.includes(slug);
@@ -68,8 +63,12 @@ async function main() {
     );
     const page = await context.newPage();
     try {
-      await page.goto(shot.url, { waitUntil: "domcontentloaded", timeout: 120000 });
+      const res = await page.goto(shot.url, { waitUntil: "domcontentloaded", timeout: 120000 });
+      if (!res || res.status() >= 400) throw new Error(`HTTP ${res ? res.status() : "sin respuesta"}`);
       await settle(page);
+      // Siempre la página inicial, arriba de todo.
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await page.waitForTimeout(300);
       const png = path.join(CACHE, `${shot.slug}-${shot.file}.png`);
       await page.screenshot({ path: png });
       fs.mkdirSync(path.join(OUT, shot.slug), { recursive: true });
@@ -79,44 +78,6 @@ async function main() {
     } finally {
       await context.close();
     }
-  }
-
-  if (want("game-it")) {
-    console.log("game-it/tour ← video");
-    const context = await browser.newContext({
-      viewport: { width: 1280, height: 800 },
-      recordVideo: { dir: CACHE, size: { width: 1280, height: 800 } },
-    });
-    const page = await context.newPage();
-    const started = Date.now();
-    await page.goto(GAME_TOUR.base, { waitUntil: "networkidle", timeout: 120000 });
-    const loadedAt = (Date.now() - started) / 1000;
-    for (const stop of GAME_TOUR.stops) {
-      await page.evaluate((h) => {
-        window.location.hash = h;
-      }, stop);
-      await page.waitForTimeout(GAME_TOUR.dwellMs);
-    }
-    const video = page.video();
-    await context.close();
-    const webm = await video.path();
-    const mp4 = path.join(OUT, "game-it", "tour.mp4");
-    fs.mkdirSync(path.dirname(mp4), { recursive: true });
-    execFileSync("ffmpeg", [
-      "-y",
-      "-loglevel", "error",
-      "-ss", String(Math.max(0, loadedAt + 0.6)),
-      "-i", webm,
-      "-vf", "scale=1280:-2,fps=30",
-      "-c:v", "libx264",
-      "-preset", "slow",
-      "-crf", "30",
-      "-pix_fmt", "yuv420p",
-      "-movflags", "+faststart",
-      "-an",
-      mp4,
-    ]);
-    console.log(`  ✓ ${path.relative(process.cwd(), mp4)} (${Math.round(fs.statSync(mp4).size / 1024)} KB)`);
   }
 
   await browser.close();

@@ -145,7 +145,7 @@ function ProjectBody({ project, index, view }: { project: Project; index: number
 
   return (
     <article className="mx-auto flex max-w-[860px] flex-col gap-6 p-6 pb-10 max-[820px]:p-4">
-      {project.media.screenshots.length || project.media.video || project.media.diagram || project.slug === "framelab" ? (
+      {project.media.screenshots.length || project.media.diagram || project.slug === "framelab" ? (
         <ProjectMedia project={project} index={index} className="aspect-[16/7] w-full max-[820px]:aspect-[16/10]" />
       ) : null}
 

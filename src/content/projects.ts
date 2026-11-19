@@ -230,7 +230,6 @@ export const projects: Project[] = [
     ],
     media: {
       screenshots: ["/projects/game-it/home.webp"],
-      video: "/projects/game-it/tour.mp4",
     },
   },
   {
