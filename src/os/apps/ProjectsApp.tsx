@@ -120,7 +120,11 @@ function FeaturedCard({ project, wide }: { project: Project; wide: boolean }) {
             src={shot}
             alt=""
             fill
-            sizes={wide ? "900px" : "450px"}
+            sizes={
+              wide
+                ? "(max-width: 820px) calc(100vw - 32px), 900px"
+                : "(max-width: 640px) calc(100vw - 32px), (max-width: 820px) 50vw, 450px"
+            }
             className="object-cover object-top transition-transform duration-700 group-hover:scale-[1.03]"
           />
         ) : (

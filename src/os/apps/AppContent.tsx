@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { memo } from "react";
 import { appOf, slugOf } from "../apps";
 import type { Win } from "../store";
 
@@ -18,8 +19,9 @@ const PrefsApp = dynamic(() => import("./PrefsApp").then((m) => m.PrefsApp), { l
 
 /** Warm the app chunks once the browser is idle, so the first open of each window is instant. */
 export function preloadApps() {
-  const n = navigator as Navigator & { connection?: { saveData?: boolean } };
-  if (n.connection?.saveData) return;
+  const n = navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } };
+  // Data saver or a 2G link: fetch each app only when its window opens.
+  if (n.connection?.saveData || /(^|-)2g$/.test(n.connection?.effectiveType ?? "")) return;
   void import("./ProjectsApp");
   void import("./ProjectApp");
   void import("./AboutApp");
@@ -30,7 +32,16 @@ export function preloadApps() {
   void import("./PrefsApp");
 }
 
-export function AppContent({ win }: { win: Win }) {
+/** Apps only care about which window they are in and what it asked for: z-order, focus, size and
+ *  minimize changes never re-render a window's contents. */
+export const AppContent = memo(
+  function AppContent({ win }: { win: Win }) {
+    return renderApp(win);
+  },
+  (a, b) => a.win.key === b.win.key && a.win.nonce === b.win.nonce && a.win.view === b.win.view,
+);
+
+function renderApp(win: Win) {
   switch (appOf(win.key)) {
     case "projects":
       return <ProjectsApp />;

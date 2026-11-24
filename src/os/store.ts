@@ -23,6 +23,8 @@ export type Win = {
   nonce: number;
   /** Optional sub-view requested by whoever opened it (e.g. a project tab). */
   view?: string;
+  /** Rendered on the server (deep link): CSS places it until the real viewport is known. */
+  ssr?: boolean;
 };
 
 export type Toast = { id: number; text: string };
@@ -98,6 +100,20 @@ export function placeWindow(key: WinKey, index: number, vp = viewport()): Rect {
   return { x, y, w, h };
 }
 
+/** placeWindow(key, 0) written in CSS, for a window rendered on the server before the viewport is known. */
+export function placeWindowCss(key: WinKey) {
+  const [dw, dh] = sizeFor(key);
+  const chrome = MENU_H + DOCK_H + 16;
+  const w = `min(${dw}px, 100vw - 24px)`;
+  const h = `min(${dh}px, 100vh - ${chrome}px)`;
+  return {
+    x: `max(12px, (100vw - ${w}) / 2 - 60px)`,
+    y: `max(${MENU_H + 8}px, ${MENU_H}px + (100vh - ${chrome}px - ${h}) / 2)`,
+    width: w,
+    height: h,
+  };
+}
+
 /* ---------- History integration (L·05: "← volver" cierra la ventana) ---------- */
 
 let navIdx = 0;
@@ -138,7 +154,7 @@ export function initialWindows(pathname: string): { windows: Win[]; focused: Win
   const key = keyForPath(pathname);
   if (!key) return { windows: [], focused: null };
   return {
-    windows: [{ key, z: 1, minimized: false, maximized: false, rect: placeWindow(key, 0, DEFAULT_VIEWPORT), nonce: 0 }],
+    windows: [{ key, z: 1, minimized: false, maximized: false, rect: placeWindow(key, 0, DEFAULT_VIEWPORT), nonce: 0, ssr: true }],
     focused: key,
   };
 }

@@ -20,9 +20,8 @@ const DOCK: SingletonApp[] = ["projects", "about", "lab", "contact"];
 export function MobileShell({ className = "" }: { className?: string }) {
   const store = useOSStore();
   const t = useT();
-  const windows = useOS((s) => s.windows);
-  const focused = useOS((s) => s.focused);
-  const top = windows.find((w) => w.key === focused && !w.minimized);
+  // Only the sheet on top matters here: other windows changing must not re-render the home screen.
+  const top = useOS((s) => s.windows.find((w) => w.key === s.focused && !w.minimized));
 
   const open = (app: SingletonApp) => store.getState().openWindow(app);
 
@@ -123,7 +122,8 @@ export function MobileShell({ className = "" }: { className?: string }) {
         </nav>
       </div>
 
-      <AnimatePresence>{top ? <Sheet key={top.key} win={top} /> : null}</AnimatePresence>
+      {/* initial={false}: a deep-linked sheet is already open on first paint instead of sliding in after the script loads. */}
+      <AnimatePresence initial={false}>{top ? <Sheet key={top.key} win={top} /> : null}</AnimatePresence>
     </div>
   );
 }

@@ -24,7 +24,8 @@ export type Ctx = {
   openEditor: (name: string) => void;
   askPassword: (onDone: (pw: string) => void) => void;
   exits: () => { count: number };
-  readme: string | null;
+  /** The profile README's markdown, fetched on first use. */
+  readme: () => Promise<string | null>;
 };
 
 const HOME = "/home/visitante";
@@ -104,9 +105,13 @@ const APP_ALIASES: Record<string, SingletonApp> = {
   prefs: "prefs",
 };
 
+/** Own-property lookup: a plain object would also answer "constructor", "__proto__" or "toString". */
+const own = <T,>(record: Record<string, T>, key: string | undefined): T | undefined =>
+  key !== undefined && Object.hasOwn(record, key) ? record[key] : undefined;
+
 function openTarget(target: string, ctx: Ctx): boolean {
   const key = target.toLowerCase().replace(/\.app$/, "").replace(/\/$/, "");
-  const app = APP_ALIASES[key];
+  const app = own(APP_ALIASES, key);
   const s = ctx.store.getState();
   if (app) {
     s.openWindow(app);
@@ -219,7 +224,7 @@ export const commands: Record<string, Cmd> = {
       es: "cat <archivo>\n  sobre-mi.txt → bio larga\n  contacto.txt → mail, GitHub y LinkedIn\n  README.md → README de perfil\n  <slug> → resumen de un proyecto",
       en: "cat <file>\n  sobre-mi.txt → long bio\n  contacto.txt → email, GitHub and LinkedIn\n  README.md → profile README\n  <slug> → a project summary",
     },
-    run: (args, ctx) => {
+    run: async (args, ctx) => {
       if (!args[0]) {
         ctx.print({ text: L(ctx, "uso: cat <archivo>", "usage: cat <file>"), tone: "muted" });
         return;
@@ -240,7 +245,8 @@ export const commands: Record<string, Cmd> = {
       if (f.kind === "bio") ctx.print({ text: about.bioLong[ctx.locale] });
       else if (f.kind === "contact") commands.contact!.run([], ctx, "contact");
       else if (f.kind === "readme") {
-        const lines = (ctx.readme ?? "").split("\n").filter((l) => !l.startsWith("![")).slice(0, 40);
+        const markdown = await ctx.readme();
+        const lines = (markdown ?? "").split("\n").filter((l) => !l.startsWith("![")).slice(0, 40);
         ctx.print(lines.length ? lines.map((text) => ({ text })) : { text: L(ctx, "No se pudo leer el README.", "Couldn't read the README."), tone: "error" });
       } else {
         const p = getProject(f.slug)!;
@@ -427,7 +433,7 @@ export const commands: Record<string, Cmd> = {
   man: {
     help: { es: "ayuda extendida: man <comando>", en: "extended help: man <command>" },
     run: (args, ctx) => {
-      const c = args[0] ? commands[args[0]] : undefined;
+      const c = own(commands, args[0]);
       if (!c) {
         ctx.print({ text: L(ctx, "¿Qué página querés? Ej: man cat", "What manual page do you want? e.g. man cat"), tone: "muted" });
         return;
@@ -524,7 +530,10 @@ export const commands: Record<string, Cmd> = {
   which: {
     help: { es: "dónde está un comando", en: "where a command lives" },
     hidden: true,
-    run: (args, ctx) => ctx.print({ text: args[0] && commands[args[0]] ? `/usr/bin/${args[0]}` : `${args[0] ?? ""} not found`, tone: args[0] && commands[args[0]] ? "text" : "error" }),
+    run: (args, ctx) => {
+      const found = !!own(commands, args[0]);
+      ctx.print({ text: found ? `/usr/bin/${args[0]}` : `${args[0] ?? ""} not found`, tone: found ? "text" : "error" });
+    },
   },
   ps: { help: { es: "alias de top", en: "alias of top" }, hidden: true, run: (a, ctx, raw) => commands.top!.run(a, ctx, raw) },
   ll: { help: { es: "alias de ls -la", en: "alias of ls -la" }, hidden: true, run: (a, ctx, raw) => commands.ls!.run(["-la", ...a], ctx, raw) },
@@ -604,7 +613,7 @@ export async function runLine(line: string, ctx: Ctx) {
   const tokens = tokenize(line);
   const [name, ...args] = tokens;
   if (!name) return;
-  const cmd = commands[name.toLowerCase()];
+  const cmd = own(commands, name.toLowerCase());
   if (cmd) {
     await cmd.run(args, ctx, line);
     return;

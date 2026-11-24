@@ -2,12 +2,13 @@ import type { Metadata, Viewport } from "next";
 import { Doto, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { identity, SITE_URL } from "@/content/profile";
-import { getReadme } from "@/lib/readme";
 import { baseOpenGraph } from "@/lib/seo";
 import { OSRoot } from "@/os/OSRoot";
 
-const geist = Geist({ variable: "--font-geist", subsets: ["latin", "latin-ext"], display: "swap" });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin", "latin-ext"], display: "swap" });
+// `subsets` only decides what gets preloaded: the other @font-face rules (latin-ext, etc.) stay in the
+// CSS and download only if a page actually uses one of their characters. Spanish and English fit in latin.
+const geist = Geist({ variable: "--font-geist", subsets: ["latin"], display: "swap" });
+const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"], display: "swap" });
 const doto = Doto({ variable: "--font-doto", subsets: ["latin"], weight: "600", display: "swap" });
 
 const description =
@@ -43,12 +44,12 @@ export const viewport: Viewport = {
 
 /**
  * Runs before paint: mode (?theme → saved → prefers-color-scheme), language, first visit and Ajustes
- * (src/os/prefs.ts). Very low-end devices start with solid surfaces until the visitor says otherwise.
+ * (src/os/prefs.ts). Only the visitor's explicit choices are saved; solid surfaces are also the default on
+ * very low-end devices and where src/os/perf.ts measured that frosted glass cannot be drawn smoothly.
  */
-const bootScript = `(function(){try{var d=document.documentElement,q=new URLSearchParams(location.search),t=q.get('theme');if(t!=='daylight'&&t!=='midnight'){t=localStorage.getItem('tejada.theme')}if(t!=='daylight'&&t!=='midnight'){t=matchMedia('(prefers-color-scheme: light)').matches?'daylight':'midnight'}d.dataset.theme=t;var l=localStorage.getItem('tejada.lang');if(l!=='es'&&l!=='en'){l=(navigator.language||'es').toLowerCase().indexOf('en')===0?'en':'es'}d.lang=l;d.dataset.lang=l;if(!localStorage.getItem('tejada.visited')){d.dataset.first='1'}var p={};try{p=JSON.parse(localStorage.getItem('tejada.prefs')||'{}')||{}}catch(e){}if(p.motion==='reduce'||p.motion==='full'){d.dataset.motion=p.motion}var n=navigator;if(p.solid===true||(p.solid===undefined&&((n.deviceMemory&&n.deviceMemory<=2)||(n.hardwareConcurrency&&n.hardwareConcurrency<=2)))){d.dataset.solid='1'}if(p.contrast){d.dataset.contrast='more'}if(p.largeText){d.dataset.text='large'}if(p.cursor===false){d.dataset.cursor='off'}}catch(e){}})();`;
+const bootScript = `(function(){try{var d=document.documentElement,s=localStorage,q=new URLSearchParams(location.search),t=q.get('theme');if(t!=='daylight'&&t!=='midnight'){t=s.getItem('tejada.theme')}if(t!=='daylight'&&t!=='midnight'){t=matchMedia('(prefers-color-scheme: light)').matches?'daylight':'midnight'}d.dataset.theme=t;var l=s.getItem('tejada.lang');if(l!=='es'&&l!=='en'){l=(navigator.language||'es').toLowerCase().indexOf('en')===0?'en':'es'}d.lang=l;d.dataset.lang=l;if(!s.getItem('tejada.visited')){d.dataset.first='1'}var p={},f={};try{p=JSON.parse(s.getItem('tejada.prefs')||'{}')||{}}catch(e){}try{f=JSON.parse(s.getItem('tejada.perf')||'{}')||{}}catch(e){}if(!p.v&&p.solid===false){delete p.solid}if(p.motion==='reduce'||p.motion==='full'){d.dataset.motion=p.motion}var n=navigator,low=(n.deviceMemory&&n.deviceMemory<=2)||(n.hardwareConcurrency&&n.hardwareConcurrency<=2);if(p.solid===true||(p.solid===undefined&&(low||f.tier==='lite'))){d.dataset.solid='1'}if(p.contrast){d.dataset.contrast='more'}if(p.largeText){d.dataset.text='large'}if(p.cursor===false){d.dataset.cursor='off'}}catch(e){}})();`;
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const readme = await getReadme();
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
       lang="es"
@@ -60,7 +61,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <script dangerouslySetInnerHTML={{ __html: bootScript }} />
       </head>
       <body>
-        <OSRoot readme={readme}>{children}</OSRoot>
+        <OSRoot>{children}</OSRoot>
       </body>
     </html>
   );

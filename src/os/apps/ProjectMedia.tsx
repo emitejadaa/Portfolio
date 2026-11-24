@@ -25,14 +25,14 @@ export function ProjectVisual({ project, priority = false, poster = false }: { p
     );
   }
   if (project.media.diagram === "secure-track") return <SecureTrackDiagram label={t(ui.project.diagram)} />;
-  if (project.media.diagram === "neurolinked") return <NeuroVisual />;
+  if (project.media.diagram === "neurolinked") return <NeuroVisual live={!poster} />;
   if (shot) {
     return (
       <Image
         src={shot}
         alt={`${project.title}: ${project.summary.es}`}
         fill
-        sizes="(max-width: 820px) 100vw, 720px"
+        sizes="(max-width: 820px) calc(100vw - 32px), 720px"
         className="object-cover object-top"
         priority={priority}
       />
@@ -77,59 +77,85 @@ const CHANNELS = [
   { name: "C4", seed: 5.7, amp: 18 },
 ].map((c) => ({ ...c, d: eegPath(c.seed, c.amp) }));
 
-/** NeuroLinked: 64 canales EEG, ventana de predicción de 0,2 a 2 s, reposo vs. mano izquierda (76,5 %). */
-function NeuroVisual() {
+/** Plot area inside the 800 × 300 drawing, where the traces scroll. */
+const PLOT = { x: 70, y: 40, w: 470, h: 240 };
+const pct = (n: number) => `${n}%`;
+
+/** NeuroLinked: 64 canales EEG, ventana de predicción de 0,2 a 2 s, reposo vs. mano izquierda (76,5 %).
+ *  The traces are a separate HTML-level <svg> that a CSS transform slides along: the compositor moves it
+ *  on its own, while animating paths inside an SVG would relayout and repaint the drawing every frame. */
+function NeuroVisual({ live }: { live: boolean }) {
   const en = useLocale() === "en";
   return (
-    <svg viewBox="0 0 800 300" role="img" aria-label="EEG" className="absolute inset-0 h-full w-full bg-surface-2 daylight:bg-[var(--blanco-roto)]">
-      <defs>
-        <clipPath id="eeg-clip">
-          <rect x="70" y="40" width="470" height="240" />
-        </clipPath>
-        <pattern id="eeg-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-          <path d="M20 0H0V20" fill="none" stroke="currentColor" strokeOpacity="0.06" />
-        </pattern>
-      </defs>
-      <rect width="800" height="300" fill="url(#eeg-grid)" className="text-text" />
-      <text x="30" y="28" className="fill-[var(--text-2)] font-mono text-[11px] tracking-[0.08em]">
-        {en ? "EEG · 64 CHANNELS · PHYSIONET MMI" : "EEG · 64 CANALES · PHYSIONET MMI"}
-      </text>
-      <rect x="380" y="40" width="120" height="240" className="fill-[var(--accent)]" fillOpacity="0.1" />
-      <text x="386" y="272" className="fill-[var(--text-2)] font-mono text-[10px]">
-        0,2–2 s
-      </text>
-      {CHANNELS.map((c, i) => (
-        <g key={c.name} transform={`translate(0 ${80 + i * 55})`}>
-          <text x="30" y="4" className="fill-[var(--text-2)] font-mono text-[11px]">
-            {c.name}
+    <div className="absolute inset-0 grid place-items-center overflow-hidden bg-surface-2 [container-type:size] daylight:bg-[var(--blanco-roto)]">
+      <div className="relative" style={{ width: "min(100cqw, 100cqh * 8 / 3)", aspectRatio: "8 / 3" }}>
+        <svg viewBox="0 0 800 300" role="img" aria-label="EEG" className="absolute inset-0 h-full w-full">
+          <defs>
+            <pattern id="eeg-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M20 0H0V20" fill="none" stroke="currentColor" strokeOpacity="0.06" />
+            </pattern>
+          </defs>
+          <rect width="800" height="300" fill="url(#eeg-grid)" className="text-text" />
+          <text x="30" y="28" className="fill-[var(--text-2)] font-mono text-[11px] tracking-[0.08em]">
+            {en ? "EEG · 64 CHANNELS · PHYSIONET MMI" : "EEG · 64 CANALES · PHYSIONET MMI"}
           </text>
-          <g clipPath="url(#eeg-clip)" transform={`translate(0 ${-80 - i * 55})`}>
-            <g transform={`translate(0 ${80 + i * 55})`}>
-              <path d={c.d} className="eeg-trace" fill="none" stroke="currentColor" strokeWidth="1.4" style={{ color: i === 1 ? "var(--accent)" : "var(--text)" }} strokeOpacity={i === 1 ? 1 : 0.7} />
-            </g>
-          </g>
-        </g>
-      ))}
-      <g transform="translate(580 92)" className="font-mono">
-        <text className="fill-[var(--text-2)] text-[11px] tracking-[0.08em]">{en ? "PREDICTION" : "PREDICCIÓN"}</text>
-        {[
-          { l: en ? "rest" : "reposo", v: 0.24 },
-          { l: en ? "left hand" : "mano izq.", v: 0.76 },
-        ].map((row, i) => (
-          <g key={row.l} transform={`translate(0 ${30 + i * 52})`}>
-            <text className="fill-[var(--text)] text-[13px]">{row.l}</text>
-            <text x="190" textAnchor="end" className="fill-[var(--text-2)] text-[12px]">
-              {Math.round(row.v * 100)}%
+          <rect x="380" y="40" width="120" height="240" className="fill-[var(--accent)]" fillOpacity="0.1" />
+          <text x="386" y="272" className="fill-[var(--text-2)] font-mono text-[10px]">
+            0,2–2 s
+          </text>
+          {CHANNELS.map((c, i) => (
+            <text key={c.name} x="30" y={84 + i * 55} className="fill-[var(--text-2)] font-mono text-[11px]">
+              {c.name}
             </text>
-            <rect y="12" width="190" height="6" rx="3" className="fill-[var(--hover-fill)]" />
-            <rect y="12" width={190 * row.v} height="6" rx="3" className={i === 1 ? "fill-[var(--accent)]" : "fill-[var(--text-2)]"} />
+          ))}
+          <g transform="translate(580 92)" className="font-mono">
+            <text className="fill-[var(--text-2)] text-[11px] tracking-[0.08em]">{en ? "PREDICTION" : "PREDICCIÓN"}</text>
+            {[
+              { l: en ? "rest" : "reposo", v: 0.24 },
+              { l: en ? "left hand" : "mano izq.", v: 0.76 },
+            ].map((row, i) => (
+              <g key={row.l} transform={`translate(0 ${30 + i * 52})`}>
+                <text className="fill-[var(--text)] text-[13px]">{row.l}</text>
+                <text x="190" textAnchor="end" className="fill-[var(--text-2)] text-[12px]">
+                  {Math.round(row.v * 100)}%
+                </text>
+                <rect y="12" width="190" height="6" rx="3" className="fill-[var(--hover-fill)]" />
+                <rect y="12" width={190 * row.v} height="6" rx="3" className={i === 1 ? "fill-[var(--accent)]" : "fill-[var(--text-2)]"} />
+              </g>
+            ))}
+            <text y="150" className="fill-[var(--text-2)] text-[11px]">
+              {en ? "test accuracy 76.5%" : "accuracy en test 76,5 %"}
+            </text>
           </g>
-        ))}
-        <text y="150" className="fill-[var(--text-2)] text-[11px]">
-          {en ? "test accuracy 76.5%" : "accuracy en test 76,5 %"}
-        </text>
-      </g>
-    </svg>
+        </svg>
+        <div
+          aria-hidden="true"
+          className="absolute overflow-hidden"
+          style={{ left: pct((PLOT.x / 800) * 100), top: pct((PLOT.y / 300) * 100), width: pct((PLOT.w / 800) * 100), height: pct((PLOT.h / 300) * 100) }}
+        >
+          {/* 1200 units = two 600-unit periods: sliding by half its own width loops without a seam. */}
+          <svg
+            viewBox={`0 ${PLOT.y} 1200 ${PLOT.h}`}
+            preserveAspectRatio="none"
+            className={`eeg-strip absolute top-0 h-full ${live ? "is-live" : ""}`}
+            style={{ left: pct((-PLOT.x / PLOT.w) * 100), width: pct((1200 / PLOT.w) * 100) }}
+          >
+            {CHANNELS.map((c, i) => (
+              <path
+                key={c.name}
+                d={c.d}
+                transform={`translate(0 ${80 + i * 55})`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                style={{ color: i === 1 ? "var(--accent)" : "var(--text)" }}
+                strokeOpacity={i === 1 ? 1 : 0.7}
+              />
+            ))}
+          </svg>
+        </div>
+      </div>
+    </div>
   );
 }
 

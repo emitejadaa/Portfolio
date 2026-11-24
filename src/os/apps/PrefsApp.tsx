@@ -4,7 +4,7 @@ import { useId, type ReactNode } from "react";
 import { ui } from "@/content/ui";
 import { useMediaQuery } from "../hooks";
 import { useLocale, useT } from "../i18n";
-import { resetPrefs, setPrefs, usePrefs } from "../prefs";
+import { isAutoSolid, resetPrefs, setPrefs, usePrefs } from "../prefs";
 import { useOS, useOSStore } from "../store";
 import { switchTheme } from "../theme";
 
@@ -60,7 +60,12 @@ export function PrefsApp() {
             // Turning it off overrides the system setting only when the system asks for less motion.
             onChange={(on) => setPrefs({ motion: on ? "reduce" : systemReduce ? "full" : "auto" })}
           />
-          <Switch label={t(ui.prefs.solid)} hint={t(ui.prefs.solidHint)} on={prefs.solid} onChange={(solid) => setPrefs({ solid })} />
+          <Switch
+            label={t(ui.prefs.solid)}
+            hint={prefs.solid && isAutoSolid() ? `${t(ui.prefs.solidHint)} ${t(ui.prefs.solidAuto)}` : t(ui.prefs.solidHint)}
+            on={prefs.solid}
+            onChange={(solid) => setPrefs({ solid })}
+          />
           <Switch label={t(ui.prefs.contrast)} hint={t(ui.prefs.contrastHint)} on={prefs.contrast} onChange={(contrast) => setPrefs({ contrast })} />
           <Switch label={t(ui.prefs.largeText)} hint={t(ui.prefs.largeTextHint)} on={prefs.largeText} onChange={(largeText) => setPrefs({ largeText })} />
           {finePointer ? (

@@ -38,3 +38,6 @@ export type DeploysResponse = {
 };
 
 export type ContactResponse = { ok: true } | { ok: false; error: "validation" | "rate" | "send"; fields?: string[] };
+
+/** Profile README: markdown for `cat README.md`, sanitized HTML for the README window. */
+export type ReadmeResponse = { html: string; markdown: string };

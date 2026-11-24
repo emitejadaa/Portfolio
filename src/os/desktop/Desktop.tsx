@@ -1,10 +1,10 @@
 "use client";
 
 import { AnimatePresence } from "motion/react";
-import { useRef } from "react";
+import { memo, useRef, type RefObject } from "react";
 import { identity } from "@/content/profile";
 import { AppContent } from "../apps/AppContent";
-import { useOS } from "../store";
+import { useOS, type Win } from "../store";
 import { ContextMenu } from "./ContextMenu";
 import { DesktopIcons } from "./DesktopIcons";
 import { Dock } from "./Dock";
@@ -33,11 +33,10 @@ export function Desktop({ className = "" }: { className?: string }) {
       </main>
       {/* Viewport coordinates: window rects, launch origins and dock targets all share them. */}
       <div ref={layerRef} className="window-layer pointer-events-none absolute inset-0 z-[50]">
-        <AnimatePresence>
+        {/* initial={false}: a deep-linked window is already there on first paint instead of fading in after the script loads. */}
+        <AnimatePresence initial={false}>
           {windows.map((win) => (
-            <Window key={win.key} win={win} constraintsRef={layerRef} dockId={dockIdFor(win.key)}>
-              <AppContent win={win} />
-            </Window>
+            <DesktopWindow key={win.key} win={win} layerRef={layerRef} />
           ))}
         </AnimatePresence>
       </div>
@@ -46,3 +45,12 @@ export function Desktop({ className = "" }: { className?: string }) {
     </div>
   );
 }
+
+/** The store keeps a window's object when another one changes, so focusing one window re-renders only the two involved. */
+const DesktopWindow = memo(function DesktopWindow({ win, layerRef }: { win: Win; layerRef: RefObject<HTMLDivElement | null> }) {
+  return (
+    <Window win={win} constraintsRef={layerRef} dockId={dockIdFor(win.key)}>
+      <AppContent win={win} />
+    </Window>
+  );
+});
