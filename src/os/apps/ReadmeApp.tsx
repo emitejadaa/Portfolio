@@ -1,14 +1,13 @@
 "use client";
 
-import { useContext } from "react";
 import { ui } from "@/content/ui";
 import { Icon } from "../icons";
 import { useT } from "../i18n";
-import { ReadmeContext } from "../readme-context";
+import { useReadme } from "../live";
 
-/** README.md del escritorio: el README de perfil de GitHub, leído en build. */
+/** README.md del escritorio: el README de perfil de GitHub, pedido al abrir la ventana. */
 export function ReadmeApp() {
-  const readme = useContext(ReadmeContext);
+  const { data: readme, error } = useReadme();
   const t = useT();
   return (
     <div className="scroll-area h-full">
@@ -24,8 +23,10 @@ export function ReadmeApp() {
         {readme ? (
           // HTML generated server-side by marked with raw HTML escaped and only http(s)/mailto URLs (src/lib/readme.ts).
           <div className="readme" dangerouslySetInnerHTML={{ __html: readme.html }} />
-        ) : (
+        ) : error ? (
           <p className="text-text-2">{t(ui.readme.error)}</p>
+        ) : (
+          <p className="font-mono text-[12px] text-text-2">{t(ui.widgets.loading)}</p>
         )}
       </div>
     </div>

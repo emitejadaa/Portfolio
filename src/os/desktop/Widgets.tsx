@@ -1,14 +1,25 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { memo, useMemo, type ReactNode } from "react";
 import { availability, contact, identity } from "@/content/profile";
 import { ui } from "@/content/ui";
 import type { DeploysResponse, GitHubResponse, StatusResponse, WeatherResponse } from "@/lib/api-types";
 import { formatBA, useApi, useClockBA, useNow } from "../hooks";
 import { Icon } from "../icons";
 import { formatNumber, relativeTime, useLocale, useT } from "../i18n";
+import { LiveDot } from "../LiveDot";
 import { useOS, useOSStore } from "../store";
 import { switchTheme } from "../theme";
+
+/** "hace 3 d" as its own tiny component: the minute tick re-renders this text, not the whole widget.
+ *  `bare` drops "hace"/"ago" when the caption says it instead. */
+function Ago({ iso, bare = false }: { iso: string; bare?: boolean }) {
+  const locale = useLocale();
+  const now = useNow();
+  if (!now) return <span suppressHydrationWarning>{bare ? "··" : ""}</span>;
+  const text = relativeTime(iso, locale, now);
+  return <span suppressHydrationWarning>{bare ? text.replace(/^hace /, "").replace(/ ago$/, "") : text}</span>;
+}
 
 function Widget({
   label,
@@ -126,9 +137,8 @@ export function StatusWidget() {
     <Widget
       label={
         <>
-          <span className="relative mr-0.5 flex h-[7px] w-[7px]">
-            <span className="absolute inset-0 animate-ping rounded-full bg-accent opacity-60 motion-reduce:animate-none" />
-            <span className="relative h-[7px] w-[7px] rounded-full bg-accent" />
+          <span className="mr-0.5">
+            <LiveDot />
           </span>
           {t(ui.widgets.status)}
         </>
@@ -150,15 +160,14 @@ export function StatusWidget() {
 export function LastDeployWidget() {
   const t = useT();
   const locale = useLocale();
-  const now = useNow();
   const { data, error } = useApi<DeploysResponse>("/api/deploys", 10 * 60 * 1000);
   const latest = data?.latest;
   return (
     <Widget label={t(ui.widgets.lastDeploy)} className="min-h-[120px] justify-between">
       {latest ? (
         <>
-          <span className="t-dot text-[min(30px,30cqi)] leading-none whitespace-nowrap" suppressHydrationWarning>
-            {now ? relativeTime(latest.date, locale, now).replace(/^hace /, "") : "··"}
+          <span className="t-dot text-[min(30px,30cqi)] leading-none whitespace-nowrap">
+            <Ago iso={latest.date} bare />
           </span>
           <span className="truncate font-mono text-[12px] text-text-2">
             {latest.title}
@@ -172,18 +181,38 @@ export function LastDeployWidget() {
   );
 }
 
-const LEVELS_MIDNIGHT = ["rgb(255 255 255 / 0.07)", "rgb(59 59 255 / 0.55)", "rgb(139 92 255 / 0.75)", "rgb(176 150 255 / 0.95)", "#d4ff3a"];
-const LEVELS_DAYLIGHT = ["rgb(17 17 16 / 0.08)", "rgb(31 59 255 / 0.3)", "rgb(31 59 255 / 0.55)", "rgb(31 59 255 / 0.8)", "#111110"];
-
 const PLACEHOLDER_WEEKS = Array.from({ length: 53 }, () => Array<number>(7).fill(0));
+
+// Heatmap geometry in viewBox units: one column per week, one row per day. A 7-unit dot on a 10-unit
+// pitch keeps the old 2 px gap at the widget's width.
+const PITCH = 10;
+const DOT = 7;
+
+/** 371 days as 5 SVG paths (one per level) instead of 371 elements: each dot is a zero-length stroke
+ *  with a round cap. Colours come from CSS (--hm-0…4), so a mode switch re-renders nothing. */
+const Heatmap = memo(function Heatmap({ weeks, label }: { weeks: number[][]; label: string }) {
+  const paths = useMemo(() => {
+    const byLevel: string[][] = [[], [], [], [], []];
+    weeks.forEach((week, wi) =>
+      week.forEach((lvl, di) => {
+        byLevel[Math.max(0, Math.min(4, lvl | 0))]!.push(`M${wi * PITCH + DOT / 2} ${di * PITCH + DOT / 2}h0`);
+      }),
+    );
+    return byLevel.map((parts) => parts.join(""));
+  }, [weeks]);
+  const w = (weeks.length - 1) * PITCH + DOT;
+  const h = 6 * PITCH + DOT;
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="block h-auto w-full" role="img" aria-label={label} fill="none" strokeWidth={DOT} strokeLinecap="round">
+      {paths.map((d, level) => (d ? <path key={level} d={d} className={`hm-${level}`} /> : null))}
+    </svg>
+  );
+});
 
 export function GitHubWidget() {
   const t = useT();
   const locale = useLocale();
-  const now = useNow();
-  const theme = useOS((s) => s.theme);
   const { data, error } = useApi<GitHubResponse>("/api/github", 30 * 60 * 1000);
-  const levels = theme === "daylight" ? LEVELS_DAYLIGHT : LEVELS_MIDNIGHT;
   const weeks = data?.weeks?.length ? data.weeks : PLACEHOLDER_WEEKS;
 
   return (
@@ -199,22 +228,7 @@ export function GitHubWidget() {
         <span className="t-dot text-[34px] leading-none">{data ? formatNumber(data.total, locale) : "···"}</span>
         <span className="text-[12.5px] leading-tight text-text-2">{t(ui.widgets.contributions)}</span>
       </div>
-      <div
-        className="grid grid-flow-col gap-[2px]"
-        style={{ gridTemplateRows: "repeat(7, auto)", gridTemplateColumns: `repeat(${weeks.length}, minmax(0, 1fr))` }}
-        role="img"
-        aria-label={data ? `${data.total} ${t(ui.widgets.contributions)}` : t(ui.widgets.loading)}
-      >
-        {weeks.map((week, wi) =>
-          week.map((lvl, di) => (
-            <span
-              key={`${wi}-${di}`}
-              className="aspect-square rounded-full"
-              style={{ background: levels[Math.max(0, Math.min(4, lvl))], gridColumn: wi + 1, gridRow: di + 1 }}
-            />
-          )),
-        )}
-      </div>
+      <Heatmap weeks={weeks} label={data ? `${data.total} ${t(ui.widgets.contributions)}` : t(ui.widgets.loading)} />
       {data?.languages?.length ? (
         <div>
           <div className="flex h-[6px] overflow-hidden rounded-full">
@@ -239,8 +253,7 @@ export function GitHubWidget() {
           rel="noopener noreferrer"
           className="group block truncate font-mono text-[11.5px] text-text-2 hover:text-text"
         >
-          <span className="text-text">{t(ui.widgets.lastCommit)}</span> · {data.lastCommit.repo} ·{" "}
-          <span suppressHydrationWarning>{now ? relativeTime(data.lastCommit.date, locale, now) : ""}</span>
+          <span className="text-text">{t(ui.widgets.lastCommit)}</span> · {data.lastCommit.repo} · <Ago iso={data.lastCommit.date} />
           <span className="block truncate opacity-80">“{data.lastCommit.message}”</span>
         </a>
       ) : error ? (

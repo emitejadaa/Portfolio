@@ -89,10 +89,10 @@ function notify(url: string) {
   subscribers.get(url)?.forEach((cb) => cb());
 }
 
-function load(url: string, ttlMs: number) {
+function load(url: string, ttlMs: number): Promise<void> {
   const hit = cache.get(url);
-  if (hit?.promise) return;
-  if (hit && !hit.error && hit.data != null && Date.now() - hit.at < ttlMs) return;
+  if (hit?.promise) return hit.promise;
+  if (hit && !hit.error && hit.data != null && Date.now() - hit.at < ttlMs) return Promise.resolve();
   const promise = fetch(url)
     .then((r) => {
       if (!r.ok) throw new Error(String(r.status));
@@ -106,6 +106,14 @@ function load(url: string, ttlMs: number) {
     })
     .finally(() => notify(url));
   cache.set(url, { data: hit?.data ?? null, error: false, at: hit?.at ?? 0, promise });
+  return promise;
+}
+
+/** Same cache as useApi, for code outside React (terminal commands). Resolves to null on error. */
+export async function getJson<T>(url: string, ttlMs = 5 * 60 * 1000): Promise<T | null> {
+  await load(url, ttlMs);
+  const entry = cache.get(url);
+  return entry && !entry.error ? ((entry.data as T | null) ?? null) : null;
 }
 
 /** Small shared fetch cache for the live widgets: one request per URL, every subscriber updates. */

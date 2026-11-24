@@ -1,13 +1,13 @@
 "use client";
 
-import { animate, motion, useDragControls, useMotionValue, type PanInfo } from "motion/react";
+import { animate, motion, useDragControls, useMotionValue } from "motion/react";
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { ui } from "@/content/ui";
 import { winTitle } from "../apps";
 import { centerOf, launchCenter } from "../hooks";
 import { useReducedMotion } from "../prefs";
 import { useT } from "../i18n";
-import { DOCK_H, MENU_H, placeWindow, useOS, useOSStore, type Rect, type Win } from "../store";
+import { DOCK_H, MENU_H, placeWindow, placeWindowCss, useOS, useOSStore, type Rect, type Win } from "../store";
 
 const SPRING = { type: "spring", bounce: 0.2, duration: 0.48 } as const;
 const EXIT = { duration: 0.24, ease: [0.4, 0, 1, 1] } as const;
@@ -39,18 +39,25 @@ export function Window({ win, children, constraintsRef, dockId }: Props) {
     win.origin ? `${win.origin.x - win.rect.x}px ${win.origin.y - win.rect.y}px` : "50% 50%",
   );
 
-  // Server render assumes 1440 × 900: fit the window to the real viewport before paint.
+  // A deep-linked window is rendered on the server, where the viewport is unknown: CSS places it with
+  // placeWindow's own formula, so it is visible on first paint and lands in the same spot once measured.
+  const [placed, setPlaced] = useState(!win.ssr);
+  const cssRect = placed ? null : placeWindowCss(win.key);
+
   useLayoutEffect(() => {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const r = { x: x.get(), y: y.get(), w: width.get(), h: height.get() };
-    if (r.w > vw - 16 || r.h > vh - MENU_H - DOCK_H || r.x + r.w > vw - 8 || r.y + r.h > vh - 24) {
+    if (!placed || r.w > vw - 16 || r.h > vh - MENU_H - DOCK_H || r.x + r.w > vw - 8 || r.y + r.h > vh - 24) {
       const next = placeWindow(win.key, 0, { w: vw, h: vh });
       x.set(next.x);
       y.set(next.y);
       width.set(next.w);
       height.set(next.h);
     }
+    // Hand the position over to the motion values before the first client paint.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!placed) setPlaced(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -115,9 +122,21 @@ export function Window({ win, children, constraintsRef, dockId }: Props) {
     el.addEventListener("pointercancel", up);
   };
 
-  const onDragEnd = (_: unknown, info: PanInfo) => {
+  // While dragging, the window gets its own compositor layer: moving it is then a transform on the GPU
+  // instead of a repaint per frame. Not kept afterwards, so open/zoom animations still raster crisp text.
+  const layerTimer = useRef(0);
+  const releaseLayer = () => {
+    window.clearTimeout(layerTimer.current);
+    if (ref.current) delete ref.current.dataset.dragging;
+  };
+  const onDragStart = () => {
+    window.clearTimeout(layerTimer.current);
+    if (ref.current) ref.current.dataset.dragging = "1";
+  };
+  const onDragEnd = () => {
+    // The throw keeps it moving for a moment (onDragTransitionEnd); the timer covers a throw that never starts.
+    layerTimer.current = window.setTimeout(releaseLayer, 1200);
     // Keep the title bar reachable after an inertial throw.
-    void info;
     const maxY = window.innerHeight - 64;
     if (y.get() > maxY) animate(y, maxY, SPRING);
     if (y.get() < MENU_H) animate(y, MENU_H + 4, SPRING);
@@ -138,7 +157,11 @@ export function Window({ win, children, constraintsRef, dockId }: Props) {
       data-focused={focused ? "1" : "0"}
       data-window={win.key}
       className="os-window pointer-events-auto absolute top-0 left-0 flex flex-col"
-      style={{ x, y, width, height, zIndex: win.z, transformOrigin: win.minimized && minimizeOrigin ? minimizeOrigin : origin }}
+      style={{
+        ...(cssRect ?? { x, y, width, height }),
+        zIndex: win.z,
+        transformOrigin: win.minimized && minimizeOrigin ? minimizeOrigin : origin,
+      }}
       drag={!win.maximized}
       dragControls={controls}
       dragListener={false}
@@ -146,7 +169,9 @@ export function Window({ win, children, constraintsRef, dockId }: Props) {
       dragTransition={{ power: 0.18, timeConstant: 220 }}
       dragElastic={0.04}
       dragConstraints={constraintsRef}
+      onDragStart={onDragStart}
       onDragEnd={onDragEnd}
+      onDragTransitionEnd={releaseLayer}
       onPointerDownCapture={() => store.getState().focusWindow(win.key)}
       initial={reduced ? { opacity: 0 } : { opacity: 0, scale: win.origin ? 0.3 : 0.94 }}
       animate={

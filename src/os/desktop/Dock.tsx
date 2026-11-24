@@ -1,7 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { ui } from "@/content/ui";
 import { AppIcon, appIconProps } from "../AppIcon";
 import { appOf, winIcon, winName, type SingletonApp } from "../apps";
@@ -15,13 +16,17 @@ export const DOCK_APPS: SingletonApp[] = ["projects", "about", "lab", "terminal"
 const BASE = 60;
 const PEAK = 84;
 
+const isRunning = (windows: Win[], app: SingletonApp) =>
+  windows.some((w) => appOf(w.key) === app || (app === "projects" && appOf(w.key) === "project"));
+
 export function Dock() {
   const mouseX = useMotionValue(Infinity);
-  const windows = useOS((s) => s.windows);
-  const minimized = windows.filter((w) => w.minimized);
+  // Derived, shallow-compared slices: focusing or moving a window does not re-render the dock.
+  const running = useOS(useShallow((s) => DOCK_APPS.map((app) => isRunning(s.windows, app))));
+  const minimized = useOS(useShallow((s) => s.windows.filter((w) => w.minimized)));
+  const contactOpen = useOS((s) => s.windows.some((w) => w.key === "contact"));
   const reduced = useReducedMotion();
   const contactSeen = useLocalFlag("tejada.contactSeen");
-  const contactOpen = windows.some((w) => w.key === "contact");
 
   useEffect(() => {
     if (contactOpen) setLocalFlag("tejada.contactSeen");
@@ -34,14 +39,8 @@ export function Dock() {
         onMouseMove={(e) => !reduced && mouseX.set(e.clientX)}
         onMouseLeave={() => mouseX.set(Infinity)}
       >
-        {DOCK_APPS.map((app) => (
-          <DockItem
-            key={app}
-            app={app}
-            mouseX={mouseX}
-            running={windows.some((w) => appOf(w.key) === app || (app === "projects" && appOf(w.key) === "project"))}
-            badge={app === "contact" && !contactSeen ? "1" : undefined}
-          />
+        {DOCK_APPS.map((app, i) => (
+          <DockItem key={app} app={app} mouseX={mouseX} running={!!running[i]} badge={app === "contact" && !contactSeen ? "1" : undefined} />
         ))}
         {minimized.length > 0 ? <span aria-hidden="true" className="mx-0.5 mb-1 h-12 w-px self-end bg-line daylight:bg-[var(--tinta)]" /> : null}
         <AnimatePresence initial={false}>
@@ -75,7 +74,7 @@ function useMagnify(mouseX: MotionValue<number>, ref: React.RefObject<HTMLElemen
   return useSpring(target, { mass: 0.1, stiffness: 170, damping: 14 });
 }
 
-function DockItem({
+const DockItem = memo(function DockItem({
   app,
   mouseX,
   running,
@@ -151,7 +150,7 @@ function DockItem({
       />
     </motion.button>
   );
-}
+});
 
 function DockMinimized({ win, mouseX }: { win: Win; mouseX: MotionValue<number> }) {
   const store = useOSStore();

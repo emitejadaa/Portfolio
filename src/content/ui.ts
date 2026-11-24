@@ -24,6 +24,7 @@ export const ui = {
     motionHint: l("Ventanas, dock y transiciones sin animación.", "Windows, dock and transitions without animation."),
     solid: l("Reducir transparencia", "Reduce transparency"),
     solidHint: l("Superficies sólidas en lugar de vidrio. Lo más liviano para equipos lentos.", "Solid surfaces instead of glass. The lightest option for slow computers."),
+    solidAuto: l("Activado solo para que este equipo vaya fluido.", "Turned on automatically to keep this device smooth."),
     contrast: l("Más contraste", "Increase contrast"),
     contrastHint: l("Textos secundarios y bordes más marcados.", "Stronger secondary text and borders."),
     largeText: l("Texto más grande", "Larger text"),
@@ -97,6 +98,10 @@ export const ui = {
     retroOn: l("System 7 · modo retro (Konami para salir)", "System 7 · retro mode (Konami to exit)"),
     retroOff: l("Modo retro desactivado", "Retro mode off"),
     notFound: l("No encontré esa ruta: te dejo en el escritorio.", "Couldn't find that route, so here's the desktop."),
+    liteOn: l(
+      "Modo liviano: superficies sólidas para que todo vaya fluido. Se cambia en Ajustes.",
+      "Light mode: solid surfaces so everything stays smooth. Change it in Settings.",
+    ),
   },
   projects: {
     featured: l("Destacados", "Featured"),

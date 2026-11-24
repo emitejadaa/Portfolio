@@ -1,4 +1,6 @@
+import "server-only";
 import { Marked, type Tokens } from "marked";
+import type { ReadmeResponse } from "./api-types";
 
 const README_URL = "https://raw.githubusercontent.com/emitejadaa/emitejadaa/main/README.md";
 
@@ -29,12 +31,12 @@ const md = new Marked({
   },
 });
 
-export type Readme = { html: string; markdown: string } | null;
+export type Readme = ReadmeResponse | null;
 
-/** Read at build time and revalidated daily (doc: "leído en build desde raw.githubusercontent.com"). */
+/** Read from raw.githubusercontent.com and kept in the data cache for a day (served by /api/readme). */
 export async function getReadme(): Promise<Readme> {
   try {
-    const res = await fetch(README_URL, { next: { revalidate: 86400 } });
+    const res = await fetch(README_URL, { next: { revalidate: 86400 }, signal: AbortSignal.timeout(8000) });
     if (!res.ok) return null;
     const markdown = await res.text();
     const html = md.parse(markdown) as string;

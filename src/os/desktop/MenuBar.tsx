@@ -8,6 +8,7 @@ import type { SingletonApp } from "../apps";
 import { ClockText, useKeys } from "../hooks";
 import { Icon } from "../icons";
 import { useT } from "../i18n";
+import { LiveDot } from "../LiveDot";
 import { useOS, useOSStore } from "../store";
 import { switchTheme } from "../theme";
 
@@ -66,10 +67,7 @@ export function MenuBar() {
           className="menu-item hidden items-center gap-2 lg:flex"
           onClick={(e) => openApp("contact", e.currentTarget)}
         >
-          <span className="relative flex h-[7px] w-[7px]">
-            <span className="absolute inset-0 animate-ping rounded-full bg-accent opacity-60 motion-reduce:animate-none" />
-            <span className="relative h-[7px] w-[7px] rounded-full bg-accent" />
-          </span>
+          <LiveDot />
           {t(availability.short)}
         </button>
         <div role="group" aria-label={t(ui.menu.language)} className="flex items-center font-mono text-[12px]">

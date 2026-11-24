@@ -79,6 +79,12 @@
   --hover-fill: rgb(255 255 255 / 0.06);
   --selection: rgb(212 255 58 / 0.28);
   --grain-opacity: 0.05;
+  /* GitHub heatmap levels 0–4 */
+  --hm-0: rgb(255 255 255 / 0.07);
+  --hm-1: rgb(59 59 255 / 0.55);
+  --hm-2: rgb(139 92 255 / 0.75);
+  --hm-3: rgb(176 150 255 / 0.95);
+  --hm-4: #d4ff3a;
 }
 
 [data-theme="daylight"] {
@@ -122,6 +128,11 @@
   --hover-fill: rgb(17 17 16 / 0.05);
   --selection: rgb(31 59 255 / 0.2);
   --grain-opacity: 0.035;
+  --hm-0: rgb(17 17 16 / 0.08);
+  --hm-1: rgb(31 59 255 / 0.3);
+  --hm-2: rgb(31 59 255 / 0.55);
+  --hm-3: rgb(31 59 255 / 0.8);
+  --hm-4: #111110;
 }
 
 @layer base {
@@ -583,6 +594,8 @@
   }
 
   /* A·07 / B·07 Ventanas */
+  /* Focus changes border and shadow at once, like macOS: easing them would repaint the whole window,
+     contents included, on every frame of the transition. */
   .os-window {
     border-radius: var(--window-radius);
     background: var(--window);
@@ -591,7 +604,10 @@
     backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
     box-shadow: var(--shadow-window-blur);
     overflow: hidden;
-    transition: border-color 240ms var(--ease-expo), box-shadow 240ms var(--ease-expo);
+  }
+  /* Its own compositor layer only while it is dragged (src/os/desktop/Window.tsx). */
+  .os-window[data-dragging="1"] {
+    will-change: transform;
   }
   .os-window[data-focused="1"] {
     border-color: var(--line-focus);
@@ -875,6 +891,21 @@
     border-radius: 5px;
   }
 
+  /* GitHub heatmap (src/os/desktop/Widgets.tsx · Heatmap) */
+  .hm-0 { stroke: var(--hm-0); }
+  .hm-1 { stroke: var(--hm-1); }
+  .hm-2 { stroke: var(--hm-2); }
+  .hm-3 { stroke: var(--hm-3); }
+  .hm-4 { stroke: var(--hm-4); }
+
+  /* "Disponible": a few pulses when the dot appears, more while its button is hovered, then rest. */
+  .live-ping {
+    animation: live-ping 1s cubic-bezier(0, 0, 0.2, 1) 4 forwards;
+  }
+  :is(a, button):hover .live-ping {
+    animation-iteration-count: infinite;
+  }
+
   .sr-only-focusable:not(:focus):not(:focus-within) {
     position: absolute;
     width: 1px;
@@ -904,13 +935,22 @@
   animation: glitch-shift 1.4s steps(12, end) forwards;
 }
 
-/* NeuroLinked: las señales EEG corren hacia la izquierda */
+/* NeuroLinked: las señales EEG corren hacia la izquierda. The strip is two periods wide, so half its
+   width is one period; transform on an HTML-level box runs on the compositor. */
 @keyframes eeg-scroll {
   from { transform: translateX(0); }
-  to { transform: translateX(-600px); }
+  to { transform: translateX(-50%); }
 }
-.eeg-trace {
+.eeg-strip.is-live {
   animation: eeg-scroll 14s linear infinite;
+}
+
+@keyframes live-ping {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
 }
 
 @keyframes caret-blink {
@@ -967,7 +1007,7 @@
     transition-duration: 120ms !important;
     scroll-behavior: auto !important;
   }
-  html:not([data-motion="full"]) .caret {
+  html:not([data-motion="full"]) :is(.caret, .live-ping) {
     animation: none;
   }
 }
@@ -979,7 +1019,7 @@ html[data-motion="reduce"] *::after {
   transition-duration: 120ms !important;
   scroll-behavior: auto !important;
 }
-html[data-motion="reduce"] .caret {
+html[data-motion="reduce"] :is(.caret, .live-ping) {
   animation: none;
 }
 
@@ -1018,6 +1058,10 @@ html[data-solid="1"] :is(.material, .material-strong, .card, .os-window, .dock-s
 }
 html[data-solid="1"] .lock-veil {
   background: rgb(7 8 10 / 0.9);
+}
+/* The drifting sky would keep a GPU-less machine redrawing the whole screen while nobody is looking. */
+html[data-solid="1"] .screensaver-sky {
+  animation: none;
 }
 html[data-solid="1"][data-theme="daylight"] .lock-veil {
   background: rgb(243 241 236 / 0.94);

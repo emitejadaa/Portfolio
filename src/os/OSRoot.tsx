@@ -6,14 +6,13 @@ import { useEffect, useState, type ReactNode } from "react";
 import type { StoreApi } from "zustand";
 import { getProject } from "@/content/projects";
 import { ui } from "@/content/ui";
-import type { Readme } from "@/lib/readme";
 import { isKnownPath, keyForPath, pathFor } from "./apps";
 import { preloadApps } from "./apps/AppContent";
-import { ReadmeContext } from "./readme-context";
 import { Desktop } from "./desktop/Desktop";
 import { Spotlight } from "./desktop/Spotlight";
 import { isTypingTarget } from "./hooks";
 import { MobileShell } from "./mobile/MobileShell";
+import { startPerfWatch } from "./perf";
 import { isReducedMotion, useReducedMotion } from "./prefs";
 import { BootScreen, Confetti, CrashOverlay, LockScreen, Screensaver, Toast } from "./overlays";
 import {
@@ -32,34 +31,59 @@ import { Cursor } from "./Cursor";
 
 registerProjectTitle((slug) => (slug ? (getProject(slug)?.title ?? slug) : ""));
 
-export function OSRoot({ readme, children }: { readme: Readme; children: ReactNode }) {
+export function OSRoot({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [store] = useState(() => createOSStore({ pathname: pathname ?? "/" }));
 
   return (
     <OSStoreContext.Provider value={store}>
-      <ReadmeContext.Provider value={readme}>
-        <a href="#contenido" className="sr-only-focusable fixed top-2 left-2 z-[400] rounded-md bg-accent px-3 py-2 text-accent-ink">
-          {ui.skip.es}
-        </a>
-        <div id="os-root">
-          <Shell />
-        </div>
-        <Hydrator store={store} />
-        {children}
-      </ReadmeContext.Provider>
+      <a href="#contenido" className="sr-only-focusable fixed top-2 left-2 z-[400] rounded-md bg-accent px-3 py-2 text-accent-ink">
+        {ui.skip.es}
+      </a>
+      <div id="os-root">
+        <Shell />
+      </div>
+      <Hydrator store={store} />
+      {children}
     </OSStoreContext.Provider>
   );
 }
 
+/** Server HTML that the client keeps as is: same root element, children never hydrated. */
+function FrozenShell({ className }: { className: string }) {
+  return <div className={className} dangerouslySetInnerHTML={{ __html: "" }} suppressHydrationWarning />;
+}
+
+const DESKTOP_SSR = "max-[820px]:hidden";
+const MOBILE_SSR = "min-[821px]:hidden";
+
 function Shell() {
   const layout = useOS((s) => s.layout);
   const reduced = useReducedMotion();
+  // The server cannot see the screen, so it renders both shells and CSS shows the one that fits. The
+  // client can: while it hydrates, the hidden shell is kept as server HTML instead of being hydrated
+  // (half the work on a phone), and the Hydrator's layout switch then removes it.
+  const [hidden] = useState<"desktop" | "mobile" | null>(() =>
+    typeof window === "undefined" ? null : window.matchMedia("(max-width: 820px)").matches ? "desktop" : "mobile",
+  );
+  const ssr = layout === "ssr";
   return (
     // Ajustes → Reducir movimiento (or the system setting) turns every Motion transform into a fade.
     <MotionConfig reducedMotion={reduced ? "always" : "never"}>
-      {layout !== "mobile" ? <Desktop className={layout === "ssr" ? "max-[820px]:hidden" : ""} /> : null}
-      {layout !== "desktop" ? <MobileShell className={layout === "ssr" ? "min-[821px]:hidden" : ""} /> : null}
+      {layout !== "mobile" ? (
+        ssr && hidden === "desktop" ? (
+          <FrozenShell className={`desktop fixed inset-0 overflow-hidden ${DESKTOP_SSR}`} />
+        ) : (
+          <Desktop className={ssr ? DESKTOP_SSR : ""} />
+        )
+      ) : null}
+      {layout !== "desktop" ? (
+        ssr && hidden === "mobile" ? (
+          <FrozenShell className={`mobile fixed inset-0 overflow-hidden ${MOBILE_SSR}`} />
+        ) : (
+          <MobileShell className={ssr ? MOBILE_SSR : ""} />
+        )
+      ) : null}
       <Spotlight />
       <Toast />
       <Confetti />
@@ -244,7 +268,26 @@ function Hydrator({ store }: { store: StoreApi<OSState> }) {
     };
   }, [store]);
 
-  // 5. Keep the tab title in the visitor's language.
+  // 5. Modo liviano automático: solid surfaces where frosted glass cannot be drawn smoothly (src/os/perf.ts).
+  useEffect(
+    () =>
+      startPerfWatch(store, () => {
+        const show = () => {
+          const s = store.getState();
+          s.showToast(ui.toast.liteOn[s.locale]);
+        };
+        // On a first visit the check can land during the boot screen, which would hide the toast.
+        if (store.getState().phase !== "boot") return show();
+        const unsubscribe = store.subscribe((s) => {
+          if (s.phase === "boot") return;
+          unsubscribe();
+          show();
+        });
+      }),
+    [store],
+  );
+
+  // 6. Keep the tab title in the visitor's language.
   useEffect(
     () =>
       store.subscribe((s, prev) => {

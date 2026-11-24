@@ -24,7 +24,8 @@ export type Ctx = {
   openEditor: (name: string) => void;
   askPassword: (onDone: (pw: string) => void) => void;
   exits: () => { count: number };
-  readme: string | null;
+  /** The profile README's markdown, fetched on first use. */
+  readme: () => Promise<string | null>;
 };
 
 const HOME = "/home/visitante";
@@ -219,7 +220,7 @@ export const commands: Record<string, Cmd> = {
       es: "cat <archivo>\n  sobre-mi.txt → bio larga\n  contacto.txt → mail, GitHub y LinkedIn\n  README.md → README de perfil\n  <slug> → resumen de un proyecto",
       en: "cat <file>\n  sobre-mi.txt → long bio\n  contacto.txt → email, GitHub and LinkedIn\n  README.md → profile README\n  <slug> → a project summary",
     },
-    run: (args, ctx) => {
+    run: async (args, ctx) => {
       if (!args[0]) {
         ctx.print({ text: L(ctx, "uso: cat <archivo>", "usage: cat <file>"), tone: "muted" });
         return;
@@ -240,7 +241,8 @@ export const commands: Record<string, Cmd> = {
       if (f.kind === "bio") ctx.print({ text: about.bioLong[ctx.locale] });
       else if (f.kind === "contact") commands.contact!.run([], ctx, "contact");
       else if (f.kind === "readme") {
-        const lines = (ctx.readme ?? "").split("\n").filter((l) => !l.startsWith("![")).slice(0, 40);
+        const markdown = await ctx.readme();
+        const lines = (markdown ?? "").split("\n").filter((l) => !l.startsWith("![")).slice(0, 40);
         ctx.print(lines.length ? lines.map((text) => ({ text })) : { text: L(ctx, "No se pudo leer el README.", "Couldn't read the README."), tone: "error" });
       } else {
         const p = getProject(f.slug)!;

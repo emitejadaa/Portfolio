@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { identity } from "@/content/profile";
-import { ReadmeContext } from "../readme-context";
 import { useLocale } from "../i18n";
+import { loadReadme } from "../live";
 import { useOS, useOSStore } from "../store";
 import { complete, prettyPath, runLine, type Ctx, type Line } from "./commands";
 
@@ -34,7 +34,6 @@ export function TerminalApp() {
   const store = useOSStore();
   const locale = useLocale();
   const focused = useOS((s) => s.focused === "terminal");
-  const readme = useContext(ReadmeContext);
   const [entries, setEntries] = useState<Entry[]>(() => welcome(locale));
   const [value, setValue] = useState("");
   const [cwd, setCwd] = useState(HOME);
@@ -73,9 +72,9 @@ export function TerminalApp() {
       openEditor: (name) => setMode({ type: "editor", name }),
       askPassword: (onDone) => setMode({ type: "password", onDone }),
       exits: () => exitCounter,
-      readme: readme?.markdown ?? null,
+      readme: () => loadReadme().then((r) => r?.markdown ?? null),
     }),
-    [store, locale, cwd, print, readme],
+    [store, locale, cwd, print],
   );
 
   const submit = async () => {

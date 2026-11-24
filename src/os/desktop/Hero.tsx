@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useState } from "react";
 import { identity } from "@/content/profile";
 import { ui } from "@/content/ui";
 import { useKeys } from "../hooks";
@@ -14,12 +15,18 @@ export function Hero() {
   const phase = useOS((s) => s.phase);
   const ready = phase === "desktop";
   const spotlightKeys = useKeys("mod", "K");
+  // The entrance plays when the visitor leaves the lock screen. A deep link starts on the desktop,
+  // so the hero is simply there from the server's first paint.
+  const [intro] = useState(!ready);
 
-  const enter = (i: number) => ({
-    initial: { opacity: 0, y: 12 },
-    animate: ready ? { opacity: 1, y: 0 } : undefined,
-    transition: { duration: 0.6, delay: 0.08 + i * 0.06, ease: [0.16, 1, 0.3, 1] as const },
-  });
+  const enter = (i: number) =>
+    intro
+      ? {
+          initial: { opacity: 0, y: 12 },
+          animate: ready ? { opacity: 1, y: 0 } : undefined,
+          transition: { duration: 0.6, delay: 0.08 + i * 0.06, ease: [0.16, 1, 0.3, 1] as const },
+        }
+      : {};
 
   return (
     <section
