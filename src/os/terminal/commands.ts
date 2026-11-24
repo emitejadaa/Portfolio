@@ -105,9 +105,13 @@ const APP_ALIASES: Record<string, SingletonApp> = {
   prefs: "prefs",
 };
 
+/** Own-property lookup: a plain object would also answer "constructor", "__proto__" or "toString". */
+const own = <T,>(record: Record<string, T>, key: string | undefined): T | undefined =>
+  key !== undefined && Object.hasOwn(record, key) ? record[key] : undefined;
+
 function openTarget(target: string, ctx: Ctx): boolean {
   const key = target.toLowerCase().replace(/\.app$/, "").replace(/\/$/, "");
-  const app = APP_ALIASES[key];
+  const app = own(APP_ALIASES, key);
   const s = ctx.store.getState();
   if (app) {
     s.openWindow(app);
@@ -429,7 +433,7 @@ export const commands: Record<string, Cmd> = {
   man: {
     help: { es: "ayuda extendida: man <comando>", en: "extended help: man <command>" },
     run: (args, ctx) => {
-      const c = args[0] ? commands[args[0]] : undefined;
+      const c = own(commands, args[0]);
       if (!c) {
         ctx.print({ text: L(ctx, "¿Qué página querés? Ej: man cat", "What manual page do you want? e.g. man cat"), tone: "muted" });
         return;
@@ -526,7 +530,10 @@ export const commands: Record<string, Cmd> = {
   which: {
     help: { es: "dónde está un comando", en: "where a command lives" },
     hidden: true,
-    run: (args, ctx) => ctx.print({ text: args[0] && commands[args[0]] ? `/usr/bin/${args[0]}` : `${args[0] ?? ""} not found`, tone: args[0] && commands[args[0]] ? "text" : "error" }),
+    run: (args, ctx) => {
+      const found = !!own(commands, args[0]);
+      ctx.print({ text: found ? `/usr/bin/${args[0]}` : `${args[0] ?? ""} not found`, tone: found ? "text" : "error" });
+    },
   },
   ps: { help: { es: "alias de top", en: "alias of top" }, hidden: true, run: (a, ctx, raw) => commands.top!.run(a, ctx, raw) },
   ll: { help: { es: "alias de ls -la", en: "alias of ls -la" }, hidden: true, run: (a, ctx, raw) => commands.ls!.run(["-la", ...a], ctx, raw) },
@@ -606,7 +613,7 @@ export async function runLine(line: string, ctx: Ctx) {
   const tokens = tokenize(line);
   const [name, ...args] = tokens;
   if (!name) return;
-  const cmd = commands[name.toLowerCase()];
+  const cmd = own(commands, name.toLowerCase());
   if (cmd) {
     await cmd.run(args, ctx, line);
     return;

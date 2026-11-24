@@ -28,3 +28,19 @@ export async function ping(url: string, timeoutMs = 8000): Promise<PingResult> {
     return { state: "down", ms: null, code: null };
   }
 }
+
+const recent = new Map<string, { at: number; result: Promise<PingResult> }>();
+
+/**
+ * At most one real check per demo every `maxAgeMs` on this server instance, shared by concurrent
+ * callers. The CDN caches /api/status and /api/ping by URL, so without this an extra query string per
+ * request would turn every hit into a fresh round of requests against the demos.
+ */
+export function pingCached(url: string, maxAgeMs: number, timeoutMs?: number): Promise<PingResult> {
+  const hit = recent.get(url);
+  const now = Date.now();
+  if (hit && now - hit.at < maxAgeMs) return hit.result;
+  const result = ping(url, timeoutMs);
+  recent.set(url, { at: now, result });
+  return result;
+}
